@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { executeQuery } from '@/utils/db';
+import { managedTables, tablePermissions } from '@/config/tables';
+import { checkTableExists } from '@/utils/db';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -7,62 +8,140 @@ export async function POST(request: NextRequest) {
   try {
     const { tableName } = await request.json();
 
-    // Tablo adını doğrula
-    if (!tableName.match(/^[a-zA-Z][a-zA-Z0-9_]*$/)) {
+    if (!tableName) {
       return NextResponse.json(
-        { error: 'Geçersiz tablo adı. Sadece harf, rakam ve alt çizgi kullanabilirsiniz.' },
+        { error: "Tablo adı gerekli" },
         { status: 400 }
       );
     }
 
-    // Tablonun varlığını kontrol et
-    const tableCheck = await executeQuery(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = $1
-      );
-    `, [tableName]);
-
-    if (!tableCheck[0].exists) {
+    // Tablo adını doğrula (sadece harf, rakam ve alt çizgi içermeli)
+    if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
       return NextResponse.json(
-        { error: 'Bu tablo veritabanında mevcut değil.' },
+        { error: "Tablo adı sadece harf, rakam ve alt çizgi içerebilir" },
+        { status: 400 }
+      );
+    }
+
+    // Tablo zaten ekli mi kontrol et
+    if (managedTables.includes(tableName)) {
+      return NextResponse.json(
+        { error: "Bu tablo zaten eklenmiş" },
+        { status: 400 }
+      );
+    }
+
+    // Veritabanında tablonun var olup olmadığını kontrol et
+    const tableExists = await checkTableExists(tableName);
+    if (!tableExists) {
+      return NextResponse.json(
+        { error: "Bu tablo veritabanında mevcut değil. Lütfen geçerli bir tablo adı girin." },
         { status: 404 }
       );
     }
 
-    // config/tables.ts dosyasını oku
-    const configPath = path.join(process.cwd(), 'src', 'config', 'tables.ts');
-    let content = await fs.readFile(configPath, 'utf-8');
+    // tables.ts dosyasını güncelle
+    const tablesPath = path.join(process.cwd(), 'src', 'config', 'tables.ts');
+    let content = await fs.readFile(tablesPath, 'utf-8');
 
-    // Tablo zaten ekli mi kontrol et
-    if (content.includes(`'${tableName}'`)) {
+    // Yeni tabloyu managedTables listesine ekle
+    content = content.replace(
+      /export const managedTables: string\[\] = \[([\s\S]*?)\];/,
+      `export const managedTables: string[] = [\n  ${[...managedTables, tableName]
+        .map(t => `'${t}'`)
+        .join(',\n  ')}\n];`
+    );
+
+    // Yeni tablo için izinleri ekle
+    const newPermissions = {
+      select: true,
+      insert: true,
+      update: true,
+      delete: true
+    };
+
+    content = content.replace(
+      /export const tablePermissions: Record<string, TablePermissions> = {([\s\S]*?)};/,
+      `export const tablePermissions: Record<string, TablePermissions> = {$1,\n  '${tableName}': ${JSON.stringify(
+        newPermissions,
+        null,
+        2
+      ).replace(/\n/g, '\n  ').replace(/"([^"]+)":/g, '$1:')}\n};`
+    );
+
+    await fs.writeFile(tablesPath, content, 'utf-8');
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Error adding table:", error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tableName = searchParams.get('tableName');
+
+    if (!tableName) {
       return NextResponse.json(
-        { error: 'Bu tablo zaten yönetilen tablolar listesinde mevcut.' },
+        { error: "Tablo adı gerekli" },
         { status: 400 }
       );
     }
 
-    // managedTables dizisine yeni tabloyu ekle
+    if (!managedTables.includes(tableName)) {
+      return NextResponse.json(
+        { error: "Tablo bulunamadı" },
+        { status: 404 }
+      );
+    }
+
+    console.log(`Deleting table: ${tableName}`);
+
+    // tables.ts dosyasını güncelle
+    const tablesPath = path.join(process.cwd(), 'src', 'config', 'tables.ts');
+    let content = await fs.readFile(tablesPath, 'utf-8');
+
+    // Tabloyu managedTables listesinden kaldır
+    const updatedTables = managedTables.filter(t => t !== tableName);
     content = content.replace(
       /export const managedTables: string\[\] = \[([\s\S]*?)\];/,
-      `export const managedTables: string[] = [$1,\n  '${tableName}', // ${new Date().toISOString()}\n];`
+      `export const managedTables: string[] = [\n  ${updatedTables
+        .map(t => `'${t}'`)
+        .join(',\n  ')}\n];`
     );
 
-    // tablePermissions nesnesine yeni tablo için izinleri ekle
+    // tablePermissions nesnesinden tabloyu kaldır
+    const updatedPermissions = { ...tablePermissions };
+    delete updatedPermissions[tableName];
+
+    let permissionsString = '{\n';
+    Object.keys(updatedPermissions).forEach((table, index, array) => {
+      permissionsString += `  '${table}': {\n`;
+      permissionsString += `    select: true,\n`;
+      permissionsString += `    insert: true,\n`;
+      permissionsString += `    update: true,\n`;
+      permissionsString += `    delete: true${index === array.length - 1 ? '\n  }' : '\n  },'}`;
+    });
+    permissionsString += '\n}';
+
     content = content.replace(
       /export const tablePermissions: Record<string, TablePermissions> = {([\s\S]*?)};/,
-      `export const tablePermissions: Record<string, TablePermissions> = {$1,\n  '${tableName}': {\n    select: true,\n    insert: true,\n    update: true,\n    delete: true,\n  },\n};`
+      `export const tablePermissions: Record<string, TablePermissions> = ${permissionsString};`
     );
 
-    // Dosyayı kaydet
-    await fs.writeFile(configPath, content, 'utf-8');
+    await fs.writeFile(tablesPath, content, 'utf-8');
+    console.log(`Table ${tableName} deleted successfully`);
 
-    return NextResponse.json({ message: 'Tablo başarıyla eklendi' });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Tablo ekleme hatası:', error);
+    console.error("Error deleting table:", error);
     return NextResponse.json(
-      { error: 'Tablo eklenirken bir hata oluştu: ' + error.message },
+      { error: error.message },
       { status: 500 }
     );
   }

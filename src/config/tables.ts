@@ -3,10 +3,10 @@ export const managedTables: string[] = [
   'yellcord_users',
   'rooms',
   'commercial',
-  'topic',
-  'yellcord_rooms'
-,
-  'article_view', // 2025-03-05T10:20:46.730Z
+  'yellcord_rooms',
+  'yellcord_messages',
+  'article_view',
+  'topic'
 ];
 
 // Tablo izinleri
@@ -24,38 +24,39 @@ export const tablePermissions: Record<string, TablePermissions> = {
     insert: true,
     update: true,
     delete: true
-  },
-  'rooms': {
+  },  'rooms': {
     select: true,
     insert: true,
     update: true,
     delete: true
-  },
-  'commercial': {
+  },  'commercial': {
     select: true,
     insert: true,
     update: true,
     delete: true
-  },
-  'topic': {
+  },  'yellcord_rooms': {
     select: true,
     insert: true,
     update: true,
     delete: true
-  },
-  'yellcord_rooms': {
+  },  'yellcord_messages': {
+    select: true,
+    insert: true,
+    update: true,
+    delete: true
+  },  'article_view': {
     select: true,
     insert: true,
     update: true,
     delete: true
   }
 ,
-  'article_view': {
+  'topic': {
     select: true,
     insert: true,
     update: true,
-    delete: true,
-  },
+    delete: true
+  }
 };
 
 // Varsayılan izinler

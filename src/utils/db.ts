@@ -96,29 +96,26 @@ export async function getTableRow(tableName: string, id: string | number) {
 export async function createTableRow(tableName: string, data: Record<string, any>) {
   const columns = Object.keys(data);
   const values = Object.values(data);
-  const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+  const placeholders = values.map((_, i) => `$${i + 1}`);
 
   const query = `
     INSERT INTO "${tableName}" (${columns.map(c => `"${c}"`).join(', ')})
-    VALUES (${placeholders})
-    RETURNING *;
+    VALUES (${placeholders.join(', ')})
+    RETURNING *
   `;
 
   return executeQuery(query, values);
 }
 
 export async function updateTableRow(tableName: string, id: string | number, data: Record<string, any>) {
-  const updates = Object.keys(data)
-    .map((key, i) => `"${key}" = $${i + 1}`)
-    .join(', ');
-
-  const values = [...Object.values(data), id];
+  const updates = Object.keys(data).map((key, i) => `"${key}" = $${i + 2}`);
+  const values = [id, ...Object.values(data)];
 
   const query = `
     UPDATE "${tableName}"
-    SET ${updates}
-    WHERE id = $${values.length}
-    RETURNING *;
+    SET ${updates.join(', ')}
+    WHERE id = $1
+    RETURNING *
   `;
 
   return executeQuery(query, values);
@@ -132,4 +129,17 @@ export async function deleteTableRow(tableName: string, id: string | number) {
   `;
 
   return executeQuery(query, [id]);
+}
+
+// Tablonun veritabanında var olup olmadığını kontrol et
+export async function checkTableExists(tableName: string): Promise<boolean> {
+  const result = await executeQuery(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = $1
+    );
+  `, [tableName]);
+
+  return result[0].exists;
 } 
