@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dinamik CRUD Admin Paneli
 
-## Getting Started
+Bu proje, Next.js ve React-Admin kullanılarak geliştirilmiş dinamik bir admin panel uygulamasıdır. Vercel PostgreSQL veritabanındaki tablolar için otomatik CRUD (Create, Read, Update, Delete) arayüzleri oluşturur.
 
-First, run the development server:
+## Özellikler
 
+- **Dinamik Tablo Yönetimi**: Kullanıcılar istedikleri tabloları admin paneline ekleyebilir
+- **Otomatik CRUD Arayüzleri**: Seçilen tablolar için otomatik olarak liste, ekleme, düzenleme ve silme ekranları oluşturulur
+- **Şema Algılama**: Tablo yapısı otomatik olarak algılanır ve uygun form elemanları oluşturulur
+- **Modern UI**: Tailwind CSS ve ShadCN UI kullanılarak modern ve kullanıcı dostu bir arayüz
+
+## Kurulum
+
+1. Projeyi klonlayın:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [repo-url]
+cd adminpanel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Bağımlılıkları yükleyin:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. `.env` dosyasını oluşturun ve veritabanı bağlantı bilgilerini ekleyin:
+```env
+POSTGRES_URL="postgres://user:password@host:port/database"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Geliştirme sunucusunu başlatın:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Tarayıcınızda [http://localhost:3000/admin](http://localhost:3000/admin) adresine gidin
 
-To learn more about Next.js, take a look at the following resources:
+## Kullanım
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Admin paneline giriş yapın
+2. Sol menüdeki "+" butonuna tıklayarak yeni bir tablo ekleyin
+3. Tablo adını girin (örn: users, products, orders)
+4. Tablo eklendikten sonra otomatik olarak CRUD ekranları oluşturulacaktır
+5. Sol menüden ilgili tabloya tıklayarak CRUD işlemlerini gerçekleştirebilirsiniz
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Teknik Detaylar
 
-## Deploy on Vercel
+- **Frontend**: Next.js, React-Admin, Tailwind CSS, ShadCN UI
+- **Backend**: Next.js API Routes
+- **Veritabanı**: Vercel PostgreSQL
+- **State Yönetimi**: React Hooks
+- **API**: RESTful endpoints
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Geliştirme
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Projeye katkıda bulunmak için:
+
+1. Bir fork oluşturun
+2. Feature branch'i oluşturun (`git checkout -b feature/amazing-feature`)
+3. Değişikliklerinizi commit edin (`git commit -m 'feat: Add amazing feature'`)
+4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
+5. Pull Request oluşturun
+
+## Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+
+## İletişim
+
+Proje Sahibi - [@your-twitter](https://twitter.com/your-twitter)
+Proje Linki: [https://github.com/username/repo](https://github.com/username/repo)

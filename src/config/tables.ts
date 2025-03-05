@@ -1,11 +1,12 @@
 // Yönetilecek tabloların listesi
 export const managedTables: string[] = [
-  'yellcord_users',  // Örnek tablo
-  'rooms',           // Örnek tablo
-  'commercial',      // Örnek tablo
-  'yellcord_rooms'   // Yeni eklenen tablo
+  'yellcord_users',
+  'rooms',
+  'commercial',
+  'topic',
+  'yellcord_rooms'
 ,
-  'article_like', // 2025-03-04T22:03:39.765Z
+  'article_view', // 2025-03-05T10:20:46.730Z
 ];
 
 // Tablo izinleri
@@ -22,28 +23,34 @@ export const tablePermissions: Record<string, TablePermissions> = {
     select: true,
     insert: true,
     update: true,
-    delete: true,
+    delete: true
   },
   'rooms': {
     select: true,
     insert: true,
     update: true,
-    delete: true,
+    delete: true
   },
   'commercial': {
     select: true,
     insert: true,
     update: true,
-    delete: true,
+    delete: true
+  },
+  'topic': {
+    select: true,
+    insert: true,
+    update: true,
+    delete: true
   },
   'yellcord_rooms': {
     select: true,
     insert: true,
     update: true,
-    delete: true,
+    delete: true
   }
 ,
-  'article_like': {
+  'article_view': {
     select: true,
     insert: true,
     update: true,
@@ -56,7 +63,7 @@ export const defaultPermissions: TablePermissions = {
   select: true,
   insert: true,
   update: true,
-  delete: true,
+  delete: true
 };
 
 // Tablo izinlerini kontrol et
