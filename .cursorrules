@@ -1,0 +1,32 @@
+**Proje Tanımı: React-Admin ile Dinamik CRUD Sayfaları**
+
+**Amaç:**
+Bu proje, **React-Admin** kütüphanesi kullanılarak **Next.js** tabanlı bir **admin paneli** geliştirmeyi hedefler. Panel, **Vercel PostgreSQL** veritabanındaki tabloları temel alarak dinamik CRUD ekranları oluşturur. 
+
+**Geliştirme Mantığı:**
+- **Varsayılan olarak herhangi bir CRUD ekranı oluşturulmaz.**
+- Admin paneli üzerinden **kullanıcı tarafından ismi verilen tablolar seçilir.**
+- Seçilen tabloların alanları **otomatik olarak algılanır.**
+- **Build sürecinde** yalnızca **seçilen tablolar** için CRUD ekranları **otomatik olarak oluşturulur.**
+- **Her veritabanı tablosu otomatik olarak eklenmez, sadece kullanıcının belirttiği tablolar için CRUD sayfaları oluşturulur.**
+- Geliştirilen **npm paketi**, bu otomatik CRUD sayfalarını oluşturacak ve tekrar tekrar kullanılabilir hale getirecektir.
+
+**Kullanılacak Teknolojiler:**
+- **Next.js** (Frontend ve Backend için)
+- **Tailwind CSS** (Stil için)
+- **ShadCN UI** (Bileşenler için)
+- **Aceternity** (State yönetimi için)
+- **React-Admin** (CRUD sayfaları için)
+- **Vercel PostgreSQL** (Veritabanı olarak)
+
+**Bağlantı ve Ortam Ayarları:**
+- **Vercel PostgreSQL** bağlantı bilgileri, uygulamanın root dizinindeki `.env` dosyasında saklanacaktır.
+- Veritabanına erişim için **Prisma yerine fetch API** kullanılacaktır.
+- **Otomatik schema okuma** mekanizması geliştirilecektir.
+- CRUD ekranları oluşturulurken **tabloların kolon tipleri** doğru şekilde algılanacak ve uygun input bileşenleri ile esnek form yapıları desteklenecektir.
+- **Seçilen tablolar için kullanıcı; `SELECT`, `INSERT`, `UPDATE`, `DELETE` işlemlerini gerçekleştirebilecektir.**
+
+**Beklenen Sonuç:**
+- Kullanıcı **yeni bir tablo belirlediğinde**, sistem **sadece bu tablolar için CRUD ekranlarını oluşturur.**
+- Admin paneli sayesinde **hızlı ve esnek bir yönetim ekranı** sunulur.
+- **Geliştirilecek npm kütüphanesi** sayesinde farklı projelerde **dinamik CRUD sayfaları kolayca yeniden kullanılabilir.**

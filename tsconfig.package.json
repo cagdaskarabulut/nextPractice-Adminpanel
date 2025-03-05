@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "target": "es2018",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": false,
+    "rootDir": "src/package"
+  },
+  "include": ["src/package/**/*"],
+  "exclude": ["node_modules", "dist", ".next", "templates", "public"]
+} 
