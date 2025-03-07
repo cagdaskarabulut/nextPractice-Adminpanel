@@ -1,5 +1,5 @@
 {
-  "name": "cagdas-easy-adminpanel",
+  "name": "easy-adminpanel",
   "version": "1.0.0",
   "description": "Next.js projeleri için otomatik PostgreSQL tablo yönetimi ve CRUD arayüzü",
   "main": "dist/index.js",
