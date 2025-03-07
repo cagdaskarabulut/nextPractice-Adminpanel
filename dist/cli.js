@@ -4,20 +4,20 @@
 const path = require("path");
 const fs = require("fs");
 
-console.log("🚀 Easy Admin Panel kuruluyor...");
+console.log("🚀 Installing Easy Admin Panel...");
 
-// Hedef dizin
+// Target directory
 const targetDir = process.cwd();
 const args = process.argv.slice(2);
 
-// Varsayılan konfigürasyon
+// Default configuration
 const defaultConfig = {
   route: "/easy-adminpanel",
   envVar: "POSTGRES_URL",
   title: "Easy Admin Panel",
 };
 
-// Argümanlardan seçenekleri al
+// Get options from arguments
 const options = {};
 for (let i = 1; i < args.length; i++) {
   if (args[i].startsWith("--")) {
@@ -28,21 +28,21 @@ for (let i = 1; i < args.length; i++) {
   }
 }
 
-// Konfigürasyonu birleştir
+// Merge configurations
 const config = {
   ...defaultConfig,
   ...options,
 };
 
-// Template klasörünü kopyala
+// Copy template folder
 const templateDir = path.join(__dirname, "templates");
 
-// src/app/ veya app/ dizinini kontrol et
+// Check src/app/ or app/ directory
 let appPath = path.join(targetDir, "src", "app");
 if (!fs.existsSync(appPath)) {
   appPath = path.join(targetDir, "app");
   if (!fs.existsSync(appPath)) {
-    // Her iki dizin de yoksa src/app dizinini oluştur
+    // Create src/app if neither exists
     fs.mkdirSync(appPath, { recursive: true });
   }
 }
@@ -51,22 +51,22 @@ const easyAdminDir = path.join(appPath, config.route.replace(/^\//, ""));
 const componentsDir = path.join(targetDir, "src", "components");
 const apiDir = path.join(appPath, "api", "admin");
 
-// Klasör oluştur
+// Create folders
 if (!fs.existsSync(easyAdminDir)) {
   fs.mkdirSync(easyAdminDir, { recursive: true });
 }
 
-// API dizinini oluştur
+// Create API directory
 if (!fs.existsSync(apiDir)) {
   fs.mkdirSync(apiDir, { recursive: true });
 }
 
-// Components dizinini oluştur
+// Create components directory
 if (!fs.existsSync(componentsDir)) {
   fs.mkdirSync(componentsDir, { recursive: true });
 }
 
-// Template dosyalarını kopyala (basit bir kopyalama fonksiyonu)
+// Copy template files (simple copy function)
 function copyDir(src, dest) {
   const files = fs.readdirSync(src);
 
@@ -89,16 +89,16 @@ function copyDir(src, dest) {
 }
 
 try {
-  // API ve diğer klasörleri kopyala
+  // Copy API and other folders
   copyDir(templateDir, easyAdminDir);
 
-  // API endpoint dosyalarını kopyala
+  // Copy API endpoint files
   const apiTemplateDir = path.join(templateDir, "api");
   if (fs.existsSync(apiTemplateDir)) {
     copyDir(apiTemplateDir, apiDir);
   }
 
-  // AdminPanel bileşenini oluştur
+  // Create AdminPanel component
   const adminPanelPath = path.join(componentsDir, "AdminPanel.tsx");
 
   const adminPanelContent = `"use client";
@@ -127,7 +127,7 @@ export function AdminPanel() {
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  // Tablo verilerini ve formları yönetmek için state'ler
+  // States for table data and forms
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [tableRecords, setTableRecords] = useState<TableRecord[]>([]);
   const [showRecordList, setShowRecordList] = useState(false);
@@ -140,23 +140,23 @@ export function AdminPanel() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<string | number | null>(null);
 
-  // API endpoint'i - uygulamanızda Next.js API routes yapısına uygun
+  // API endpoint - compliant with Next.js API routes structure
   const apiUrl = '/api/admin'; 
   
-  // Tüm tabloları yükle
+  // Load all tables
   useEffect(() => {
     async function fetchTables() {
       try {
         const response = await fetch(\`\${apiUrl}/tables\`);
         if (!response.ok) {
-          throw new Error('Tablolar yüklenirken bir hata oluştu');
+          throw new Error('Error loading tables');
         }
         
         const data = await response.json();
         setTables(data);
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu');
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
         setLoading(false);
       }
     }
@@ -164,21 +164,21 @@ export function AdminPanel() {
     fetchTables();
   }, []);
 
-  // Kullanılabilir tüm tabloları getir
+  // Get all available tables
   const fetchAllTables = async () => {
     try {
-      // Tüm tabloları getir
+      // Get all tables
       const response = await fetch(\`\${apiUrl}/all-tables\`);
       if (!response.ok) {
-        throw new Error('Tablolar yüklenirken bir hata oluştu');
+        throw new Error('Error loading tables');
       }
       
       const allTableNames = await response.json();
       
-      // Seçili tabloları kontrol et
+      // Check selected tables
       const selectedTableNames = tables.map(t => t.name);
       
-      // Tabloları birleştir
+      // Map tables
       const mappedTables = allTableNames.map((name) => ({
         table_name: name,
         selected: selectedTableNames.includes(name)
@@ -187,18 +187,18 @@ export function AdminPanel() {
       setAvailableTables(mappedTables);
       setIsDialogOpen(true);
     } catch (err) {
-      alert('Tablolar yüklenirken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error loading tables: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
 
-  // Tablo seçimini değiştir
+  // Change table selection
   const handleTableSelection = (tableName, isSelected) => {
     setAvailableTables(prev => 
       prev.map(t => t.table_name === tableName ? { ...t, selected: isSelected } : t)
     );
   };
 
-  // Seçimleri kaydet
+  // Save selections
   const saveTableSelection = async () => {
     try {
       const selectedTables = availableTables
@@ -214,17 +214,17 @@ export function AdminPanel() {
       });
       
       if (!response.ok) {
-        throw new Error('Tablo seçimleri kaydedilirken bir hata oluştu');
+        throw new Error('Error saving table selections');
       }
       
       setIsDialogOpen(false);
-      window.location.reload(); // Sayfayı yenile
+      window.location.reload(); // Refresh page
     } catch (err) {
-      alert('Seçimler kaydedilirken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error saving selections: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
   
-  // Tablo kayıtlarını listele
+  // List table records
   const handleListTable = async (tableName: string) => {
     setSelectedTable(tableName);
     setShowRecordList(true);
@@ -233,29 +233,29 @@ export function AdminPanel() {
     setRecordLoading(true);
     
     try {
-      // Önce tablo sütunlarını al
+      // First get table columns
       const schemaResponse = await fetch(\`\${apiUrl}/\${tableName}?_schema=true\`);
       if (schemaResponse.ok) {
         const schema = await schemaResponse.json();
         setTableColumns(schema);
       }
       
-      // Sonra kayıtları al
+      // Then get records
       const response = await fetch(\`\${apiUrl}/\${tableName}\`);
       if (!response.ok) {
-        throw new Error('Kayıtlar alınırken bir hata oluştu');
+        throw new Error('Error retrieving records');
       }
       
       const data = await response.json();
       setTableRecords(data);
       setRecordLoading(false);
     } catch (err) {
-      alert('Kayıtlar alınırken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error retrieving records: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setRecordLoading(false);
     }
   };
   
-  // Yeni kayıt formunu aç
+  // Open new record form
   const handleAddRecord = (tableName: string) => {
     setSelectedTable(tableName);
     setShowAddForm(true);
@@ -264,13 +264,13 @@ export function AdminPanel() {
     setRecordLoading(true);
     setNewRecord({});
     
-    // Tablo sütunlarını al
+    // Get table columns
     fetch(\`\${apiUrl}/\${tableName}?_schema=true\`)
       .then(res => res.json())
       .then(schema => {
         setTableColumns(schema);
         
-        // Başlangıç değerlerini oluştur
+        // Create initial values
         const initialValues = {};
         schema.forEach(column => {
           if (column.name !== 'id') {
@@ -282,12 +282,12 @@ export function AdminPanel() {
         setRecordLoading(false);
       })
       .catch(err => {
-        alert('Tablo şeması alınırken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+        alert('Error getting table schema: ' + (err instanceof Error ? err.message : 'Unknown error'));
         setRecordLoading(false);
       });
   };
 
-  // Kaydı düzenleme formunu aç
+  // Open edit record form
   const handleEditRecord = async (id: string | number) => {
     if (!selectedTable) return;
     
@@ -297,30 +297,30 @@ export function AdminPanel() {
     setRecordLoading(true);
     
     try {
-      // Kaydı getir
+      // Get record
       const response = await fetch(\`\${apiUrl}/\${selectedTable}?id=\${id}\`);
       if (!response.ok) {
-        throw new Error('Kayıt alınırken bir hata oluştu');
+        throw new Error('Error retrieving record');
       }
       
       const record = await response.json();
       setEditRecord(record);
       setRecordLoading(false);
     } catch (err) {
-      alert('Kayıt alınırken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error retrieving record: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setRecordLoading(false);
       setShowRecordList(true);
       setShowEditForm(false);
     }
   };
   
-  // Kaydı silme onay diyaloğunu göster
+  // Show delete confirmation dialog
   const handleDeleteConfirm = (id: string | number) => {
     setRecordToDelete(id);
     setDeleteConfirmOpen(true);
   };
   
-  // Kaydı sil
+  // Delete record
   const handleDeleteRecord = async () => {
     if (!selectedTable || !recordToDelete) return;
     
@@ -330,23 +330,23 @@ export function AdminPanel() {
       });
       
       if (!response.ok) {
-        throw new Error('Kayıt silinirken bir hata oluştu');
+        throw new Error('Error deleting record');
       }
       
-      // Silme başarılı, tabloyu güncelle
+      // Deletion successful, update table
       setDeleteConfirmOpen(false);
       setRecordToDelete(null);
       
-      // Tabloyu yeniden yükle
+      // Reload table
       handleListTable(selectedTable);
       
-      alert('Kayıt başarıyla silindi');
+      alert('Record successfully deleted');
     } catch (err) {
-      alert('Kayıt silinirken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error deleting record: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
   
-  // Form alanı değişikliğini işle (yeni kayıt için)
+  // Handle input change (for new record)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewRecord(prev => ({
@@ -355,7 +355,7 @@ export function AdminPanel() {
     }));
   };
   
-  // Form alanı değişikliğini işle (düzenleme için)
+  // Handle input change (for editing)
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditRecord(prev => {
@@ -367,7 +367,7 @@ export function AdminPanel() {
     });
   };
   
-  // Yeni kayıt ekle
+  // Add new record
   const handleSubmitRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -383,12 +383,12 @@ export function AdminPanel() {
       });
       
       if (!response.ok) {
-        throw new Error('Kayıt eklenirken bir hata oluştu');
+        throw new Error('Error adding record');
       }
       
-      alert('Kayıt başarıyla eklendi!');
+      alert('Record successfully added!');
       
-      // Formu temizle
+      // Clear form
       const initialValues = {};
       tableColumns.forEach(column => {
         if (column.name !== 'id') {
@@ -398,14 +398,14 @@ export function AdminPanel() {
       
       setNewRecord(initialValues);
       
-      // İsteğe bağlı olarak kayıt listesine dön
+      // Optionally return to record list
       handleListTable(selectedTable);
     } catch (err) {
-      alert('Kayıt eklenirken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error adding record: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
   
-  // Kayıt güncelle
+  // Update record
   const handleUpdateRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -421,19 +421,19 @@ export function AdminPanel() {
       });
       
       if (!response.ok) {
-        throw new Error('Kayıt güncellenirken bir hata oluştu');
+        throw new Error('Error updating record');
       }
       
-      alert('Kayıt başarıyla güncellendi!');
+      alert('Record successfully updated!');
       
-      // Kayıt listesine dön
+      // Return to record list
       handleListTable(selectedTable);
     } catch (err) {
-      alert('Kayıt güncellenirken bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+      alert('Error updating record: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
   
-  // Panele geri dön
+  // Return to panel
   const handleBackToTables = () => {
     setSelectedTable(null);
     setShowRecordList(false);
@@ -442,14 +442,14 @@ export function AdminPanel() {
   };
   
   if (loading) {
-    return <div className="text-gray-800">Yükleniyor...</div>;
+    return <div className="text-gray-800">Loading...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500">Hata: {error}</div>;
+    return <div className="text-red-500">Error: {error}</div>;
   }
   
-  // Tablo listesi paneli
+  // Table list panel
   if (!selectedTable && !showRecordList && !showAddForm && !showEditForm) {
     return (
       <div>
@@ -458,16 +458,16 @@ export function AdminPanel() {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             onClick={fetchAllTables}
           >
-            Tabloları Yönet
+            Manage Tables
           </button>
         </div>
         
-        {/* Tablo Yönetim Diyaloğu */}
+        {/* Table Management Dialog */}
         {isDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-96 max-w-full">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Yönetilecek Tabloları Seçin</h2>
-              <p className="mb-4 text-gray-600">Admin panelinde gösterilecek tabloları seçin.</p>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Select Tables to Manage</h2>
+              <p className="mb-4 text-gray-600">Select tables to show in the admin panel.</p>
               
               <div className="max-h-60 overflow-y-auto mb-4">
                 {availableTables.map(table => (
@@ -489,13 +489,13 @@ export function AdminPanel() {
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  İptal
+                  Cancel
                 </button>
                 <button 
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   onClick={saveTableSelection}
                 >
-                  Kaydet
+                  Save
                 </button>
               </div>
             </div>
@@ -504,13 +504,13 @@ export function AdminPanel() {
         
         {tables.length === 0 ? (
           <div className="p-8 bg-white rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Henüz hiç tablo eklenmemiş</h2>
-            <p className="mb-4 text-gray-800">Admin panelinde gösterilecek tabloları seçmek için "Tabloları Yönet" butonunu kullanın.</p>
-            <p className="text-sm text-gray-600">Seçilen tablolar için otomatik CRUD arayüzleri oluşturulacaktır.</p>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">No tables added yet</h2>
+            <p className="mb-4 text-gray-800">Use the "Manage Tables" button to select tables to display in the admin panel.</p>
+            <p className="text-sm text-gray-600">Automatic CRUD interfaces will be created for selected tables.</p>
           </div>
         ) : (
           <div>
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Tablolar</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Tables</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {tables.map((table) => (
                 <div key={table.name} className="p-4 border rounded shadow hover:shadow-md">
@@ -520,13 +520,13 @@ export function AdminPanel() {
                       className="px-2 py-1 bg-blue-500 text-white text-sm rounded"
                       onClick={() => handleListTable(table.name)}
                     >
-                      Listele
+                      List
                     </button>
                     <button 
                       className="px-2 py-1 bg-green-500 text-white text-sm rounded"
                       onClick={() => handleAddRecord(table.name)}
                     >
-                      Ekle
+                      Add
                     </button>
                   </div>
                 </div>
@@ -538,7 +538,7 @@ export function AdminPanel() {
     );
   }
   
-  // Kayıt listesi
+  // Record list
   if (showRecordList && selectedTable) {
     return (
       <div>
@@ -547,38 +547,38 @@ export function AdminPanel() {
             className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-3"
             onClick={handleBackToTables}
           >
-            ← Geri
+            ← Back
           </button>
           <h2 className="text-xl font-bold text-gray-800">
-            {tables.find(t => t.name === selectedTable)?.displayName || selectedTable} Listesi
+            {tables.find(t => t.name === selectedTable)?.displayName || selectedTable} List
           </h2>
           <button 
             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 ml-auto"
             onClick={() => handleAddRecord(selectedTable)}
           >
-            + Yeni Ekle
+            + Add New
           </button>
         </div>
         
-        {/* Silme Onay Diyaloğu */}
+        {/* Delete Confirmation Dialog */}
         {deleteConfirmOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-96 max-w-full">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Kaydı Sil</h2>
-              <p className="mb-6 text-gray-600">Bu kaydı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Delete Record</h2>
+              <p className="mb-6 text-gray-600">Are you sure you want to delete this record? This action cannot be undone.</p>
               
               <div className="flex justify-end space-x-2">
                 <button 
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                   onClick={() => setDeleteConfirmOpen(false)}
                 >
-                  İptal
+                  Cancel
                 </button>
                 <button 
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   onClick={handleDeleteRecord}
                 >
-                  Sil
+                  Delete
                 </button>
               </div>
             </div>
@@ -586,10 +586,10 @@ export function AdminPanel() {
         )}
         
         {recordLoading ? (
-          <div className="text-gray-800">Yükleniyor...</div>
+          <div className="text-gray-800">Loading...</div>
         ) : tableRecords.length === 0 ? (
           <div className="p-8 bg-white rounded-lg shadow">
-            <p className="text-gray-800">Bu tabloda henüz kayıt bulunmuyor.</p>
+            <p className="text-gray-800">No records found in this table.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -601,7 +601,7 @@ export function AdminPanel() {
                       {column.name}
                     </th>
                   ))}
-                  <th className="border px-4 py-2 text-left text-gray-800">İşlemler</th>
+                  <th className="border px-4 py-2 text-left text-gray-800">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -617,13 +617,13 @@ export function AdminPanel() {
                         className="px-2 py-1 bg-blue-500 text-white text-xs rounded mr-1"
                         onClick={() => handleEditRecord(record.id)}
                       >
-                        Düzenle
+                        Edit
                       </button>
                       <button 
                         className="px-2 py-1 bg-red-500 text-white text-xs rounded"
                         onClick={() => handleDeleteConfirm(record.id)}
                       >
-                        Sil
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -636,7 +636,7 @@ export function AdminPanel() {
     );
   }
   
-  // Yeni kayıt ekleme formu
+  // Add new record form
   if (showAddForm && selectedTable) {
     return (
       <div>
@@ -645,20 +645,20 @@ export function AdminPanel() {
             className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-3"
             onClick={handleBackToTables}
           >
-            ← Geri
+            ← Back
           </button>
           <h2 className="text-xl font-bold text-gray-800">
-            {tables.find(t => t.name === selectedTable)?.displayName || selectedTable} Ekle
+            Add {tables.find(t => t.name === selectedTable)?.displayName || selectedTable}
           </h2>
         </div>
         
         {recordLoading ? (
-          <div className="text-gray-800">Yükleniyor...</div>
+          <div className="text-gray-800">Loading...</div>
         ) : (
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handleSubmitRecord}>
               {tableColumns.map(column => {
-                // id kolonunu formda gösterme, genellikle otomatik atanır
+                // Don't show id column in form, usually auto-assigned
                 if (column.name === 'id') return null;
                 
                 return (
@@ -684,13 +684,13 @@ export function AdminPanel() {
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2"
                   onClick={handleBackToTables}
                 >
-                  İptal
+                  Cancel
                 </button>
                 <button 
                   type="submit" 
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 >
-                  Kaydet
+                  Save
                 </button>
               </div>
             </form>
@@ -700,7 +700,7 @@ export function AdminPanel() {
     );
   }
   
-  // Kayıt düzenleme formu
+  // Edit record form
   if (showEditForm && selectedTable && editRecord) {
     return (
       <div>
@@ -709,20 +709,20 @@ export function AdminPanel() {
             className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-3"
             onClick={() => handleListTable(selectedTable)}
           >
-            ← Geri
+            ← Back
           </button>
           <h2 className="text-xl font-bold text-gray-800">
-            {tables.find(t => t.name === selectedTable)?.displayName || selectedTable} Düzenle
+            Edit {tables.find(t => t.name === selectedTable)?.displayName || selectedTable}
           </h2>
         </div>
         
         {recordLoading ? (
-          <div className="text-gray-800">Yükleniyor...</div>
+          <div className="text-gray-800">Loading...</div>
         ) : (
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handleUpdateRecord}>
               {tableColumns.map(column => {
-                // id kolonunu salt okunur göster
+                // Show id column as read-only
                 if (column.name === 'id') {
                   return (
                     <div key={column.name} className="mb-4">
@@ -763,13 +763,13 @@ export function AdminPanel() {
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2"
                   onClick={() => handleListTable(selectedTable)}
                 >
-                  İptal
+                  Cancel
                 </button>
                 <button 
                   type="submit" 
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  Güncelle
+                  Update
                 </button>
               </div>
             </form>
@@ -779,13 +779,13 @@ export function AdminPanel() {
     );
   }
   
-  return <div className="text-gray-800">Yükleniyor...</div>;
+  return <div className="text-gray-800">Loading...</div>;
 }
 `;
 
   fs.writeFileSync(adminPanelPath, adminPanelContent);
 
-  // page.tsx içeriğini güncelle (basitleştirilmiş)
+  // Update page.tsx content (simplified)
   const pagePath = path.join(easyAdminDir, "page.tsx");
   const pageContent = `"use client";
 
@@ -804,7 +804,7 @@ export default function EasyAdminPage() {
 
   fs.writeFileSync(pagePath, pageContent);
 
-  // Konfigürasyon dosyasını oluştur
+  // Create configuration file
   const configFile = path.join(easyAdminDir, "config.ts");
   const configContent = `
 export const adminConfig = {
@@ -816,27 +816,27 @@ export const adminConfig = {
 
   fs.writeFileSync(configFile, configContent);
 
-  console.log(`✅ Easy Admin Panel başarıyla kuruldu!`);
-  console.log(`📂 Dosyalar şuraya kopyalandı: ${easyAdminDir}`);
-  console.log(`📂 AdminPanel bileşenini şuraya eklendi: ${adminPanelPath}`);
+  console.log(`✅ Easy Admin Panel successfully installed!`);
+  console.log(`📂 Files copied to: ${easyAdminDir}`);
+  console.log(`📂 AdminPanel component added to: ${adminPanelPath}`);
   console.log(
-    `🚀 Admin paneline şu adresten erişebilirsiniz: http://localhost:3000${config.route}`
+    `🚀 Access the admin panel at: http://localhost:3000${config.route}`
   );
 
-  console.log("\n📝 Kurulum sonrası yapılması gerekenler:");
-  console.log("1. Veritabanı bağlantı bilgilerinizi .env dosyasına ekleyin:");
+  console.log("\n📝 Post-installation steps:");
+  console.log("1. Add your database connection information to your .env file:");
   console.log(
     `   ${config.envVar}="postgres://user:password@host:port/database"`
   );
-  console.log("2. Uygulamanızı başlatın:");
+  console.log("2. Start your application:");
   console.log("   npm run dev");
   console.log(
-    `3. Tarayıcınızdan admin paneline erişin: http://localhost:3000${config.route}\n`
+    `3. Access the admin panel in your browser: http://localhost:3000${config.route}\n`
   );
   console.log(
-    "\n⚠️ Not: Eğer hata alırsanız, projenizdeki tsconfig.json dosyasında '@' alias tanımlamasını kontrol edin!"
+    "\n⚠️ Note: If you encounter errors, check that your tsconfig.json has proper '@' alias configuration!"
   );
 } catch (err) {
-  console.error("❌ Kurulum sırasında bir hata oluştu:", err);
+  console.error("❌ An error occurred during installation:", err);
   process.exit(1);
 }
