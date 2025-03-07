@@ -1,3 +1,5 @@
 {
-  "selectedTables": ["users", "products"]
+  "selectedTables": [
+    "topic"
+  ]
 }
