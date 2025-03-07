@@ -1,4 +1,107 @@
-"use client";
+#!/usr/bin/env node
+"use strict";
+
+const path = require("path");
+const fs = require("fs");
+
+console.log("🚀 Easy Admin Panel kuruluyor...");
+
+// Hedef dizin
+const targetDir = process.cwd();
+const args = process.argv.slice(2);
+
+// Varsayılan konfigürasyon
+const defaultConfig = {
+  route: "/easy-adminpanel",
+  envVar: "POSTGRES_URL",
+  title: "Easy Admin Panel",
+};
+
+// Argümanlardan seçenekleri al
+const options = {};
+for (let i = 1; i < args.length; i++) {
+  if (args[i].startsWith("--")) {
+    const [key, value] = args[i].slice(2).split("=");
+    if (key && value) {
+      options[key] = value;
+    }
+  }
+}
+
+// Konfigürasyonu birleştir
+const config = {
+  ...defaultConfig,
+  ...options,
+};
+
+// Template klasörünü kopyala
+const templateDir = path.join(__dirname, "templates");
+
+// src/app/ veya app/ dizinini kontrol et
+let appPath = path.join(targetDir, "src", "app");
+if (!fs.existsSync(appPath)) {
+  appPath = path.join(targetDir, "app");
+  if (!fs.existsSync(appPath)) {
+    // Her iki dizin de yoksa src/app dizinini oluştur
+    fs.mkdirSync(appPath, { recursive: true });
+  }
+}
+
+const easyAdminDir = path.join(appPath, config.route.replace(/^\//, ""));
+const componentsDir = path.join(targetDir, "src", "components");
+const apiDir = path.join(appPath, "api", "admin");
+
+// Klasör oluştur
+if (!fs.existsSync(easyAdminDir)) {
+  fs.mkdirSync(easyAdminDir, { recursive: true });
+}
+
+// API dizinini oluştur
+if (!fs.existsSync(apiDir)) {
+  fs.mkdirSync(apiDir, { recursive: true });
+}
+
+// Components dizinini oluştur
+if (!fs.existsSync(componentsDir)) {
+  fs.mkdirSync(componentsDir, { recursive: true });
+}
+
+// Template dosyalarını kopyala (basit bir kopyalama fonksiyonu)
+function copyDir(src, dest) {
+  const files = fs.readdirSync(src);
+
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+
+  for (const file of files) {
+    const srcPath = path.join(src, file);
+    const destPath = path.join(dest, file);
+
+    const stat = fs.statSync(srcPath);
+
+    if (stat.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+try {
+  // API ve diğer klasörleri kopyala
+  copyDir(templateDir, easyAdminDir);
+
+  // API endpoint dosyalarını kopyala
+  const apiTemplateDir = path.join(templateDir, "api");
+  if (fs.existsSync(apiTemplateDir)) {
+    copyDir(apiTemplateDir, apiDir);
+  }
+
+  // AdminPanel bileşenini oluştur
+  const adminPanelPath = path.join(componentsDir, "AdminPanel.tsx");
+
+  const adminPanelContent = `"use client";
 
 import React, { useState, useEffect } from 'react';
 
@@ -44,7 +147,7 @@ export function AdminPanel() {
   useEffect(() => {
     async function fetchTables() {
       try {
-        const response = await fetch(`${apiUrl}/tables`);
+        const response = await fetch(\`\${apiUrl}/tables\`);
         if (!response.ok) {
           throw new Error('Tablolar yüklenirken bir hata oluştu');
         }
@@ -65,7 +168,7 @@ export function AdminPanel() {
   const fetchAllTables = async () => {
     try {
       // Tüm tabloları getir
-      const response = await fetch(`${apiUrl}/all-tables`);
+      const response = await fetch(\`\${apiUrl}/all-tables\`);
       if (!response.ok) {
         throw new Error('Tablolar yüklenirken bir hata oluştu');
       }
@@ -102,7 +205,7 @@ export function AdminPanel() {
         .filter(t => t.selected)
         .map(t => t.table_name);
       
-      const response = await fetch(`${apiUrl}/save-tables`, {
+      const response = await fetch(\`\${apiUrl}/save-tables\`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,14 +234,14 @@ export function AdminPanel() {
     
     try {
       // Önce tablo sütunlarını al
-      const schemaResponse = await fetch(`${apiUrl}/${tableName}?_schema=true`);
+      const schemaResponse = await fetch(\`\${apiUrl}/\${tableName}?_schema=true\`);
       if (schemaResponse.ok) {
         const schema = await schemaResponse.json();
         setTableColumns(schema);
       }
       
       // Sonra kayıtları al
-      const response = await fetch(`${apiUrl}/${tableName}`);
+      const response = await fetch(\`\${apiUrl}/\${tableName}\`);
       if (!response.ok) {
         throw new Error('Kayıtlar alınırken bir hata oluştu');
       }
@@ -162,7 +265,7 @@ export function AdminPanel() {
     setNewRecord({});
     
     // Tablo sütunlarını al
-    fetch(`${apiUrl}/${tableName}?_schema=true`)
+    fetch(\`\${apiUrl}/\${tableName}?_schema=true\`)
       .then(res => res.json())
       .then(schema => {
         setTableColumns(schema);
@@ -195,7 +298,7 @@ export function AdminPanel() {
     
     try {
       // Kaydı getir
-      const response = await fetch(`${apiUrl}/${selectedTable}?id=${id}`);
+      const response = await fetch(\`\${apiUrl}/\${selectedTable}?id=\${id}\`);
       if (!response.ok) {
         throw new Error('Kayıt alınırken bir hata oluştu');
       }
@@ -222,7 +325,7 @@ export function AdminPanel() {
     if (!selectedTable || !recordToDelete) return;
     
     try {
-      const response = await fetch(`${apiUrl}/${selectedTable}?id=${recordToDelete}`, {
+      const response = await fetch(\`\${apiUrl}/\${selectedTable}?id=\${recordToDelete}\`, {
         method: 'DELETE'
       });
       
@@ -271,7 +374,7 @@ export function AdminPanel() {
     if (!selectedTable) return;
     
     try {
-      const response = await fetch(`${apiUrl}/${selectedTable}`, {
+      const response = await fetch(\`\${apiUrl}/\${selectedTable}\`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -309,7 +412,7 @@ export function AdminPanel() {
     if (!selectedTable || !editRecord) return;
     
     try {
-      const response = await fetch(`${apiUrl}/${selectedTable}`, {
+      const response = await fetch(\`\${apiUrl}/\${selectedTable}\`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -677,4 +780,63 @@ export function AdminPanel() {
   }
   
   return <div className="text-gray-800">Yükleniyor...</div>;
+}
+`;
+
+  fs.writeFileSync(adminPanelPath, adminPanelContent);
+
+  // page.tsx içeriğini güncelle (basitleştirilmiş)
+  const pagePath = path.join(easyAdminDir, "page.tsx");
+  const pageContent = `"use client";
+
+import { AdminPanel } from '@/components/AdminPanel';
+
+export default function EasyAdminPage() {
+  const title = process.env.EASY_ADMIN_TITLE || 'Easy Admin Panel';
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">{title}</h1>
+      <AdminPanel />
+    </div>
+  );
+}`;
+
+  fs.writeFileSync(pagePath, pageContent);
+
+  // Konfigürasyon dosyasını oluştur
+  const configFile = path.join(easyAdminDir, "config.ts");
+  const configContent = `
+export const adminConfig = {
+  route: '${config.route}',
+  envVar: '${config.envVar}',
+  title: '${config.title}',
+};
+  `.trim();
+
+  fs.writeFileSync(configFile, configContent);
+
+  console.log(`✅ Easy Admin Panel başarıyla kuruldu!`);
+  console.log(`📂 Dosyalar şuraya kopyalandı: ${easyAdminDir}`);
+  console.log(`📂 AdminPanel bileşenini şuraya eklendi: ${adminPanelPath}`);
+  console.log(
+    `🚀 Admin paneline şu adresten erişebilirsiniz: http://localhost:3000${config.route}`
+  );
+
+  console.log("\n📝 Kurulum sonrası yapılması gerekenler:");
+  console.log("1. Veritabanı bağlantı bilgilerinizi .env dosyasına ekleyin:");
+  console.log(
+    `   ${config.envVar}="postgres://user:password@host:port/database"`
+  );
+  console.log("2. Uygulamanızı başlatın:");
+  console.log("   npm run dev");
+  console.log(
+    `3. Tarayıcınızdan admin paneline erişin: http://localhost:3000${config.route}\n`
+  );
+  console.log(
+    "\n⚠️ Not: Eğer hata alırsanız, projenizdeki tsconfig.json dosyasında '@' alias tanımlamasını kontrol edin!"
+  );
+} catch (err) {
+  console.error("❌ Kurulum sırasında bir hata oluştu:", err);
+  process.exit(1);
 }
