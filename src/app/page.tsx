@@ -16,7 +16,7 @@ export default function Home() {
         <div className="admin-container py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Terminal size={24} className="text-admin-blue-500" />
-            <span className="text-xl font-bold">DigiBoard</span>
+            <span className="text-xl font-bold">Easy-AdminPanel</span>
           </div>
           <div className="flex items-center gap-4">
             <a
@@ -136,8 +136,8 @@ export default function Home() {
                     Admin Paneline Giriş Yapın
                   </h3>
                   <p className="text-admin-gray-300">
-                    "Admin Paneline Git" butonuna tıklayarak DigiBoard yönetim
-                    paneline giriş yapın.
+                    "Admin Paneline Git" butonuna tıklayarak Easy-AdminPanel
+                    yönetim paneline giriş yapın.
                   </p>
                 </div>
               </li>
@@ -194,10 +194,10 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <Terminal size={20} className="text-admin-blue-500" />
-              <span className="font-bold">DigiBoard</span>
+              <span className="font-bold">Easy-AdminPanel</span>
             </div>
             <div className="text-admin-gray-400 text-sm">
-              © 2024 DigiBoard. Tüm hakları saklıdır.
+              © 2024 Easy-AdminPanel. Tüm hakları saklıdır.
             </div>
           </div>
         </div>

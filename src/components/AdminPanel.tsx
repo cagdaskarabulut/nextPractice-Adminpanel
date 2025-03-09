@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   PlusCircle,
   ChevronLeft,
+  ChevronRight,
   Pencil,
   Trash2,
   Filter,
@@ -11,6 +12,7 @@ import {
   Check,
   X,
   Database,
+  Menu,
 } from "lucide-react";
 import { Table, AvailableTable, TableRecord, TableColumn } from "./types";
 import TableList from "./TableList";
@@ -18,6 +20,8 @@ import RecordList from "./RecordList";
 import AddRecordForm from "./AddRecordForm";
 import EditRecordForm from "./EditRecordForm";
 import LoadingSpinner from "./ui/LoadingSpinner";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function AdminPanel() {
   const [tables, setTables] = useState<Table[]>([]);
@@ -25,6 +29,38 @@ export function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname();
+
+  // Ekran boyutuna göre sidebar durumunu ayarla
+  useEffect(() => {
+    // Büyük ekranlarda (md breakpoint üzeri) menüyü açık tut
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setIsSidebarOpen(!mobile); // Mobil değilse aç, mobilse kapat
+    };
+
+    // Sayfa yüklendiğinde ve ekran boyutu değiştiğinde çalıştır
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Sayfa yüklendiğinde ve pathname değiştiğinde çalışır
+  useEffect(() => {
+    // URL tam olarak /easy-adminpanel ise, tablo seçimini sıfırla
+    if (pathname === "/easy-adminpanel") {
+      setSelectedTable(null);
+      setShowRecordList(false);
+      setShowAddForm(false);
+      setShowEditForm(false);
+    }
+  }, [pathname]);
 
   // Tablo verilerini ve formları yönetmek için state'ler
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -292,24 +328,73 @@ export function AdminPanel() {
   };
 
   // Form alanı değişikliğini işle (yeni kayıt için)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewRecord((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleInputChange = (
+    e:
+      | React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
+      | {
+          target: {
+            name: string;
+            value: any;
+            checked?: boolean;
+            type?: string;
+          };
+        }
+  ) => {
+    const target = e.target;
+    const name = target.name;
+
+    // Özel kontroller için (örneğin DynamicField'dan gelen checked değeri)
+    if ("checked" in target && target.checked !== undefined) {
+      setNewRecord((prev) => ({
+        ...prev,
+        [name]: target.checked,
+      }));
+    } else {
+      setNewRecord((prev) => ({
+        ...prev,
+        [name]: target.value,
+      }));
+    }
   };
 
   // Form alanı değişikliğini işle (düzenleme için)
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditRecord((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+  const handleEditInputChange = (
+    e:
+      | React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
+      | {
+          target: {
+            name: string;
+            value: any;
+            checked?: boolean;
+            type?: string;
+          };
+        }
+  ) => {
+    const target = e.target;
+    const name = target.name;
+
+    // Özel kontroller için (örneğin DynamicField'dan gelen checked değeri)
+    if ("checked" in target && target.checked !== undefined) {
+      setEditRecord((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [name]: target.checked,
+        };
+      });
+    } else {
+      setEditRecord((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [name]: target.value,
+        };
+      });
+    }
   };
 
   // Yeni kayıt ekle
@@ -384,12 +469,31 @@ export function AdminPanel() {
     }
   };
 
-  // Panele geri dön
+  // Kart görünümüne dönüş
   const handleBackToTables = () => {
     setSelectedTable(null);
     setShowRecordList(false);
     setShowAddForm(false);
     setShowEditForm(false);
+    // Menüyü kapat - buradaki atama varsayılan olarak masaüstünde de menünün kapalı başlamasını sağlayacak
+    setIsSidebarOpen(false);
+  };
+
+  // Sol menüden "Tabloları Yönet" butonuna tıklandığında çalışacak fonksiyon
+  const handleManageTablesFromSidebar = () => {
+    // Önce mevcut seçili tabloyu ve form durumlarını temizle
+    setSelectedTable(null);
+    setShowRecordList(false);
+    setShowAddForm(false);
+    setShowEditForm(false);
+
+    // Sonra tabloları yönet dialogunu aç
+    fetchAllTables();
+  };
+
+  // Hamburger menü ikonuna tıklandığında çalışacak fonksiyon
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   if (loading) {
@@ -410,8 +514,68 @@ export function AdminPanel() {
     <div className="space-y-6">
       {!selectedTable && !showAddForm && !showEditForm ? (
         <div>
+          {/* Ok Şeklinde Menü Açma/Kapama Butonu */}
+          <button
+            onClick={toggleSidebar}
+            className={`fixed z-40 top-[85px] left-0 h-[40px] w-[20px] bg-admin-blue-500 hover:bg-admin-blue-400 text-white rounded-r-md shadow-md flex items-center justify-center transition-all ${
+              isSidebarOpen ? "left-64" : "left-0"
+            }`}
+            aria-label={isSidebarOpen ? "Menüyü Kapat" : "Menüyü Aç"}
+          >
+            {isSidebarOpen ? (
+              <ChevronLeft size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+          </button>
+
+          {/* Karanlık Overlay - Menü açıkken sadece mobil görünümde */}
+          {isSidebarOpen && isMobile && (
+            <div
+              className="fixed inset-0 bg-black/50 z-20 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Sol Menü - Tablo Listesi (Ana Sayfa) */}
+          <div
+            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[73px] overflow-y-auto z-10 transition-transform duration-300 ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <h3 className="text-sm uppercase text-admin-gray-400 font-bold mb-4 pl-2 mt-4">
+              Tablolar
+            </h3>
+            <div className="space-y-1">
+              {tables.map((table) => (
+                <button
+                  key={table.name}
+                  onClick={() => handleListTable(table.name)}
+                  className="w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center text-admin-gray-300 hover:bg-admin-dark-blue-700"
+                >
+                  <Database size={16} className="mr-2" />
+                  {table.displayName}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 border-t border-admin-dark-blue-700 pt-6 pl-2">
+              <button
+                onClick={handleManageTablesFromSidebar}
+                className="text-admin-blue-500 text-sm flex items-center gap-1.5 hover:text-admin-blue-400 transition-colors"
+              >
+                <PlusCircle size={14} />
+                <span>Tabloları Yönet</span>
+              </button>
+            </div>
+          </div>
+
           {/* Tablo Yönetimi */}
-          <div className="flex justify-between items-center mb-6">
+          <div
+            className={`flex justify-between items-center mb-6 pl-8 transition-all duration-300 ${
+              isSidebarOpen ? "pl-[calc(16rem+2rem)]" : "pl-8"
+            }`}
+          >
             <h2 className="admin-title">Veritabanı Tabloları</h2>
             <button
               onClick={fetchAllTables}
@@ -460,25 +624,23 @@ export function AdminPanel() {
                     {availableTables.map((table) => (
                       <div
                         key={table.table_name}
-                        className="flex items-center p-3 bg-admin-dark-blue-700 rounded-md"
+                        className="flex items-center space-x-3"
                       >
-                        <input
-                          type="checkbox"
-                          id={`table_${table.table_name}`}
-                          checked={table.selected}
-                          onChange={(e) =>
-                            handleTableSelection(
-                              table.table_name,
-                              e.target.checked
-                            )
-                          }
-                          className="mr-3 h-5 w-5 accent-admin-blue-500"
-                        />
-                        <label
-                          htmlFor={`table_${table.table_name}`}
-                          className="flex-1 cursor-pointer text-admin-gray-200"
-                        >
-                          {table.table_name}
+                        <label className="flex items-center cursor-pointer w-full">
+                          <input
+                            type="checkbox"
+                            checked={table.selected}
+                            onChange={(e) =>
+                              handleTableSelection(
+                                table.table_name,
+                                e.target.checked
+                              )
+                            }
+                            className="form-checkbox h-5 w-5 text-admin-blue-500 rounded border-admin-gray-400 bg-admin-dark-blue-900"
+                          />
+                          <span className="ml-2 text-white">
+                            {table.table_name}
+                          </span>
                         </label>
                       </div>
                     ))}
@@ -504,7 +666,6 @@ export function AdminPanel() {
             </div>
           )}
 
-          {/* Tablo Listesi */}
           {loading ? (
             <div className="p-8 flex justify-center">
               <LoadingSpinner />
@@ -514,7 +675,11 @@ export function AdminPanel() {
               <p className="text-red-500">{error}</p>
             </div>
           ) : tables.length === 0 ? (
-            <div className="admin-card flex flex-col items-center p-12 text-center">
+            <div
+              className={`admin-card flex flex-col items-center p-12 text-center transition-all duration-300 ${
+                isSidebarOpen ? "mx-2" : "mx-8"
+              }`}
+            >
               <Database size={48} className="text-admin-gray-600 mb-4" />
               <h3 className="admin-subtitle mb-2">Henüz Tablo Bulunmuyor</h3>
               <p className="text-admin-gray-400 mb-6">
@@ -529,214 +694,265 @@ export function AdminPanel() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${
+                isSidebarOpen ? "px-2" : "px-8"
+              }`}
+            >
               {tables.map((table) => (
-                <div
-                  key={table.name}
-                  className="admin-card hover:border-admin-blue-500 border border-transparent transition-colors"
-                >
-                  <div className="p-6">
-                    <h3 className="admin-subtitle mb-2">
-                      {table.displayName || table.name}
-                    </h3>
-                    <p className="text-admin-gray-400 mb-4 text-sm">
-                      {table.name}
-                    </p>
-
-                    <div className="flex gap-3 mt-4">
-                      <button
-                        onClick={() => handleListTable(table.name)}
-                        className="admin-button-primary flex items-center gap-2 flex-1"
-                      >
-                        <Filter size={16} />
-                        <span>Listele</span>
-                      </button>
-                      <button
-                        onClick={() => handleAddRecord(table.name)}
-                        className="admin-button-secondary flex items-center gap-2 flex-1"
-                      >
-                        <Plus size={16} />
-                        <span>Ekle</span>
-                      </button>
-                    </div>
+                <div key={table.name} className="admin-card">
+                  <h3 className="admin-subtitle mb-1">{table.displayName}</h3>
+                  <p className="text-admin-gray-400 text-sm mb-4">
+                    {table.name}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleListTable(table.name)}
+                      className="admin-button-primary flex items-center gap-1 text-sm flex-1"
+                    >
+                      <Filter size={16} />
+                      <span>Listele</span>
+                    </button>
+                    <button
+                      onClick={() => handleAddRecord(table.name)}
+                      className="admin-button-secondary flex items-center gap-1 text-sm"
+                    >
+                      <Plus size={16} />
+                      <span>Ekle</span>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      ) : showRecordList ? (
-        <div>
-          {/* Kayıt Listesi */}
-          <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  setSelectedTable(null);
-                  setShowRecordList(false);
-                  setTableRecords([]);
-                }}
-                className="admin-button-secondary flex items-center gap-2"
-              >
-                <ChevronLeft size={18} />
-                <span>Geri</span>
-              </button>
-              <h2 className="admin-title">
-                {selectedTable
-                  ? tables.find((t) => t.name === selectedTable)?.displayName ||
-                    selectedTable
-                  : ""}
-              </h2>
-            </div>
+      ) : (
+        <div className="flex">
+          {/* Ok Şeklinde Menü Açma/Kapama Butonu */}
+          <button
+            onClick={toggleSidebar}
+            className={`fixed z-40 top-[85px] left-0 h-[40px] w-[20px] bg-admin-blue-500 hover:bg-admin-blue-400 text-white rounded-r-md shadow-md flex items-center justify-center transition-all ${
+              isSidebarOpen ? "left-64" : "left-0"
+            }`}
+            aria-label={isSidebarOpen ? "Menüyü Kapat" : "Menüyü Aç"}
+          >
+            {isSidebarOpen ? (
+              <ChevronLeft size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+          </button>
 
-            <button
-              onClick={() => {
-                if (selectedTable) {
-                  handleAddRecord(selectedTable);
-                }
-              }}
-              className="admin-button-primary flex items-center gap-2"
-            >
-              <Plus size={18} />
-              <span>Yeni Kayıt</span>
-            </button>
+          {/* Karanlık Overlay - Menü açıkken sadece mobil görünümde */}
+          {isSidebarOpen && isMobile && (
+            <div
+              className="fixed inset-0 bg-black/50 z-20 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Sol Menü - Tablo Listesi */}
+          <div
+            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[73px] overflow-y-auto z-10 transition-transform duration-300 ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <h3 className="text-sm uppercase text-admin-gray-400 font-bold mb-4 pl-2 mt-4">
+              Tablolar
+            </h3>
+            <div className="space-y-1">
+              {tables.map((table) => (
+                <button
+                  key={table.name}
+                  onClick={() => handleListTable(table.name)}
+                  className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center ${
+                    selectedTable === table.name
+                      ? "bg-admin-blue-500 text-white"
+                      : "text-admin-gray-300 hover:bg-admin-dark-blue-700"
+                  }`}
+                >
+                  <Database size={16} className="mr-2" />
+                  {table.displayName}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 border-t border-admin-dark-blue-700 pt-6 pl-2">
+              <button
+                onClick={handleManageTablesFromSidebar}
+                className="text-admin-blue-500 text-sm flex items-center gap-1.5 hover:text-admin-blue-400 transition-colors"
+              >
+                <PlusCircle size={14} />
+                <span>Tabloları Yönet</span>
+              </button>
+              <button
+                onClick={handleBackToTables}
+                className="text-admin-gray-400 text-sm flex items-center gap-1.5 mt-4 hover:text-white transition-colors"
+              >
+                <ChevronLeft size={14} />
+                <span>Kart Görünümü</span>
+              </button>
+            </div>
           </div>
 
-          {/* Silme Onay Diyaloğu */}
-          {deleteConfirmOpen && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="admin-card max-w-md w-full p-6">
-                <h3 className="admin-subtitle mb-4">
-                  Kaydı Silmek İstiyor musunuz?
-                </h3>
-                <p className="text-admin-gray-300 mb-6">
-                  Bu işlem geri alınamaz ve kayıt kalıcı olarak silinecektir.
-                </p>
+          {/* Ana İçerik - Her Ekranda Menü Durumuna Göre Adapte Olur */}
+          <div
+            className={`flex-1 transition-all duration-300 ${
+              isSidebarOpen ? "pl-64" : "pl-0"
+            }`}
+          >
+            <div className="p-4 md:p-6 pl-16">
+              {showRecordList && (
+                <div>
+                  {/* Tablo Başlığı ve Yeni Kayıt Butonu */}
+                  <div className="overflow-x-auto mb-6">
+                    <div
+                      className={`flex justify-between items-center min-w-full pr-2 transition-all duration-300 ${
+                        isSidebarOpen ? "pl-2" : "pl-8"
+                      }`}
+                    >
+                      <h2 className="admin-title truncate mr-4">
+                        {
+                          tables.find((t) => t.name === selectedTable)
+                            ?.displayName
+                        }
+                      </h2>
+                      <button
+                        onClick={() => handleAddRecord(selectedTable!)}
+                        className="admin-button-primary flex-shrink-0 flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <Plus size={18} />
+                        <span>Yeni Kayıt</span>
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => setDeleteConfirmOpen(false)}
-                    className="admin-button-secondary"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleDeleteRecord();
-                      setDeleteConfirmOpen(false);
-                    }}
-                    className="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center gap-2"
-                  >
-                    <Trash2 size={18} />
-                    <span>Sil</span>
-                  </button>
+                  {recordLoading ? (
+                    <div className="p-8 flex justify-center">
+                      <LoadingSpinner />
+                    </div>
+                  ) : (
+                    <div
+                      className={`admin-card overflow-hidden transition-all duration-300 ${
+                        isSidebarOpen ? "mx-2" : "ml-8"
+                      }`}
+                    >
+                      <div className="overflow-x-auto">
+                        <div className="min-w-full max-w-full">
+                          <table className="admin-table w-full table-fixed">
+                            <thead>
+                              <tr>
+                                {tableColumns.map((column) => (
+                                  <th
+                                    key={column.name}
+                                    className="w-auto max-w-[200px] truncate"
+                                  >
+                                    {column.name}
+                                  </th>
+                                ))}
+                                <th className="text-right w-24">İşlemler</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tableRecords.map((record, index) => (
+                                <tr key={index}>
+                                  {tableColumns.map((column) => (
+                                    <td
+                                      key={column.name}
+                                      className="max-w-[200px] truncate"
+                                    >
+                                      {record[column.name]?.toString() || "-"}
+                                    </td>
+                                  ))}
+                                  <td className="text-right whitespace-nowrap">
+                                    <button
+                                      onClick={() =>
+                                        handleEditRecord(record.id)
+                                      }
+                                      className="text-admin-blue-500 hover:text-admin-blue-400 mr-3"
+                                      title="Düzenle"
+                                    >
+                                      <Pencil size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteConfirm(record.id)
+                                      }
+                                      className="text-red-500 hover:text-red-400"
+                                      title="Sil"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {deleteConfirmOpen && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                      <div className="admin-card max-w-md w-full">
+                        <h3 className="admin-subtitle mb-4">Kaydı Sil</h3>
+                        <p className="text-admin-gray-300 mb-6">
+                          Bu kaydı silmek istediğinize emin misiniz? Bu işlem
+                          geri alınamaz.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => setDeleteConfirmOpen(false)}
+                            className="admin-button-secondary"
+                          >
+                            İptal
+                          </button>
+                          <button
+                            onClick={handleDeleteRecord}
+                            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded flex items-center gap-2"
+                          >
+                            <Trash2 size={16} />
+                            <span>Sil</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {recordLoading ? (
-            <div className="p-8 flex justify-center">
-              <LoadingSpinner />
-            </div>
-          ) : tableRecords.length === 0 ? (
-            <div className="admin-card flex flex-col items-center p-12 text-center">
-              <Database size={48} className="text-admin-gray-600 mb-4" />
-              <h3 className="admin-subtitle mb-2">Kayıt Bulunamadı</h3>
-              <p className="text-admin-gray-400 mb-6">
-                Bu tabloda henüz kayıt bulunmuyor
-              </p>
-              <button
-                onClick={() => {
-                  if (selectedTable) {
-                    handleAddRecord(selectedTable);
+              {showAddForm && (
+                <AddRecordForm
+                  tables={tables}
+                  selectedTable={selectedTable || ""}
+                  tableColumns={tableColumns}
+                  newRecord={newRecord}
+                  recordLoading={recordLoading}
+                  onBackToTables={handleBackToTables}
+                  onInputChange={handleInputChange}
+                  onSubmitRecord={handleSubmitRecord}
+                />
+              )}
+
+              {showEditForm && (
+                <EditRecordForm
+                  tables={tables}
+                  selectedTable={selectedTable || ""}
+                  tableColumns={tableColumns}
+                  editRecord={editRecord}
+                  recordLoading={recordLoading}
+                  onBackToList={() =>
+                    selectedTable && handleListTable(selectedTable)
                   }
-                }}
-                className="admin-button-primary flex items-center gap-2"
-              >
-                <Plus size={18} />
-                <span>Yeni Kayıt Ekle</span>
-              </button>
+                  onEditInputChange={handleEditInputChange}
+                  onUpdateRecord={handleUpdateRecord}
+                />
+              )}
             </div>
-          ) : (
-            <div className="admin-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      {tableColumns.map((column) => (
-                        <th
-                          key={column.name}
-                          scope="col"
-                          className={column.name === "id" ? "w-24" : ""}
-                        >
-                          {column.name}
-                        </th>
-                      ))}
-                      <th scope="col" className="w-24 text-right">
-                        İşlemler
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableRecords.map((record) => (
-                      <tr key={record.id}>
-                        {tableColumns.map((column) => (
-                          <td key={`${record.id}_${column.name}`}>
-                            {record[column.name] !== null
-                              ? String(record[column.name])
-                              : ""}
-                          </td>
-                        ))}
-                        <td className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleEditRecord(record.id)}
-                              className="p-1.5 text-admin-blue-500 hover:text-white hover:bg-admin-blue-500 rounded-md transition-colors"
-                              title="Düzenle"
-                            >
-                              <Pencil size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteConfirm(record.id)}
-                              className="p-1.5 text-red-400 hover:text-white hover:bg-red-500 rounded-md transition-colors"
-                              title="Sil"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      ) : showAddForm ? (
-        <AddRecordForm
-          tables={tables}
-          selectedTable={selectedTable || ""}
-          tableColumns={tableColumns}
-          newRecord={newRecord}
-          recordLoading={recordLoading}
-          onBackToTables={handleBackToTables}
-          onInputChange={handleInputChange}
-          onSubmitRecord={handleSubmitRecord}
-        />
-      ) : showEditForm ? (
-        <EditRecordForm
-          tables={tables}
-          selectedTable={selectedTable || ""}
-          tableColumns={tableColumns}
-          editRecord={editRecord}
-          recordLoading={recordLoading}
-          onBackToList={() => selectedTable && handleListTable(selectedTable)}
-          onEditInputChange={handleEditInputChange}
-          onUpdateRecord={handleUpdateRecord}
-        />
-      ) : null}
+      )}
     </div>
   );
 }

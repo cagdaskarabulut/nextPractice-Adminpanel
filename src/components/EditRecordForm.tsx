@@ -3,6 +3,7 @@
 import React from "react";
 import { ChevronLeft, Save } from "lucide-react";
 import { Table, TableRecord, TableColumn } from "./types";
+import { DynamicField, parseValueFromInput } from "./utils/FormFieldUtils";
 
 interface EditRecordFormProps {
   tables: Table[];
@@ -11,7 +12,13 @@ interface EditRecordFormProps {
   editRecord: TableRecord | null;
   recordLoading: boolean;
   onBackToList: () => void;
-  onEditInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onEditInputChange: (
+    e:
+      | React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
+      | { target: { name: string; value: any; checked?: boolean } }
+  ) => void;
   onUpdateRecord: (e: React.FormEvent) => Promise<void>;
 }
 
@@ -47,11 +54,10 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
         </div>
       ) : (
-        <div className="admin-card">
+        <div className="admin-card mx-0 sm:mx-2">
           <form onSubmit={onUpdateRecord} className="space-y-6">
-            {tableColumns.map((column: TableColumn) => {
-              // id kolonunu salt okunur göster
-              if (column.name === "id") {
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {tableColumns.map((column: TableColumn) => {
                 return (
                   <div key={column.name} className="space-y-2">
                     <label
@@ -60,48 +66,28 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
                     >
                       {column.name}
                     </label>
-                    <input
-                      type="text"
-                      id={column.name}
-                      value={editRecord?.[column.name] || ""}
-                      disabled
-                      className="admin-input w-full bg-admin-dark-blue-800 text-admin-gray-500 cursor-not-allowed"
+                    <DynamicField
+                      column={column}
+                      value={editRecord?.[column.name]}
+                      onChange={onEditInputChange}
+                      disabled={column.name === "id"}
                     />
                   </div>
                 );
-              }
+              })}
+            </div>
 
-              return (
-                <div key={column.name} className="space-y-2">
-                  <label
-                    htmlFor={column.name}
-                    className="block text-sm font-medium text-admin-gray-300"
-                  >
-                    {column.name}
-                  </label>
-                  <input
-                    type="text"
-                    id={column.name}
-                    name={column.name}
-                    value={editRecord?.[column.name] || ""}
-                    onChange={onEditInputChange}
-                    className="admin-input w-full"
-                  />
-                </div>
-              );
-            })}
-
-            <div className="flex justify-end gap-3 pt-6">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
               <button
                 type="button"
-                className="admin-button-secondary"
+                className="admin-button-secondary w-full sm:w-auto"
                 onClick={onBackToList}
               >
                 İptal
               </button>
               <button
                 type="submit"
-                className="admin-button-primary flex items-center gap-2"
+                className="admin-button-primary flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <Save size={18} />
                 <span>Güncelle</span>
