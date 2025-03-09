@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  // Eski ve kullanılmayan seçenekler kaldırıldı
 };
 
 module.exports = nextConfig;

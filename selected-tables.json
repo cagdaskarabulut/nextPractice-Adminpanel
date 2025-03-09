@@ -1,0 +1,31 @@
+{
+  "tables": [
+    "arabulucu_message",
+    "arabulucubul-arabulucu",
+    "article",
+    "article_comment",
+    "article_like",
+    "article_project_auto_generate_files",
+    "article_project_colors",
+    "article_project_metatags",
+    "article_project_special_fields",
+    "article_view",
+    "commercial",
+    "rooms",
+    "tables",
+    "topic",
+    "yellcord_channel_permissions",
+    "yellcord_custom_emojis",
+    "yellcord_emoji_permissions",
+    "yellcord_emojis",
+    "yellcord_files",
+    "yellcord_invites",
+    "yellcord_messages",
+    "yellcord_notifications",
+    "yellcord_roles",
+    "yellcord_room_members",
+    "yellcord_rooms",
+    "yellcord_user_roles",
+    "yellcord_users"
+  ]
+}

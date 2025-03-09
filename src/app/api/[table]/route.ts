@@ -1,127 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTableData, createTableRow, updateTableRow, deleteTableRow } from '@/utils/db';
-import { isTableManaged, hasTablePermission } from '@/config/tables';
+import dbUtils from '@/utils/db';
 
+// GET: Tablo kayıtlarını getir veya şemasını getir
 export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  const table = await params.table;
-
-  if (!isTableManaged(table)) {
-    return NextResponse.json(
-      { error: 'Table not found or not managed' },
-      { status: 404 }
-    );
-  }
-
-  if (!hasTablePermission(table, 'select')) {
-    return NextResponse.json(
-      { error: 'Operation not permitted' },
-      { status: 403 }
-    );
-  }
-
   try {
-    const data = await getTableData(table);
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const table = params.table;
+    const url = new URL(request.url);
+    const isSchema = url.searchParams.has('_schema');
+
+    if (isSchema) {
+      // Tablo şemasını döndür
+      const columns = await dbUtils.getTableColumns(table);
+      return NextResponse.json(columns);
+    } else {
+      // Tablo kayıtlarını döndür
+      const records = await dbUtils.getTableRecords(table);
+      return NextResponse.json(records);
+    }
+  } catch (error: any) {
+    console.error('Tablo kayıt listeleme hatası:', error);
+    return NextResponse.json(
+      { error: error.message || 'Kayıtlar alınamadı' },
+      { status: 500 }
+    );
   }
 }
 
+// POST: Yeni kayıt ekle
 export async function POST(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  const table = await params.table;
-
-  if (!isTableManaged(table)) {
-    return NextResponse.json(
-      { error: 'Table not found or not managed' },
-      { status: 404 }
-    );
-  }
-
-  if (!hasTablePermission(table, 'insert')) {
-    return NextResponse.json(
-      { error: 'Operation not permitted' },
-      { status: 403 }
-    );
-  }
-
   try {
+    const table = params.table;
     const data = await request.json();
-    const result = await createTableRow(table, data);
-    return NextResponse.json(result[0]);
-  } catch (error) {
-    console.error('Error creating row:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { table: string } }
-) {
-  const table = await params.table;
+    // Kayıt ekleme işlemi
+    const newRecord = await dbUtils.addRecord(table, data);
 
-  if (!isTableManaged(table)) {
+    return NextResponse.json(newRecord, { status: 201 });
+  } catch (error: any) {
+    console.error('Kayıt ekleme hatası:', error);
     return NextResponse.json(
-      { error: 'Table not found or not managed' },
-      { status: 404 }
+      { error: error.message || 'Kayıt eklenemedi' },
+      { status: 500 }
     );
-  }
-
-  if (!hasTablePermission(table, 'update')) {
-    return NextResponse.json(
-      { error: 'Operation not permitted' },
-      { status: 403 }
-    );
-  }
-
-  try {
-    const data = await request.json();
-    const { id, ...updateData } = data;
-    const result = await updateTableRow(table, id, updateData);
-    return NextResponse.json(result[0]);
-  } catch (error) {
-    console.error('Error updating row:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { table: string } }
-) {
-  const table = await params.table;
-
-  if (!isTableManaged(table)) {
-    return NextResponse.json(
-      { error: 'Table not found or not managed' },
-      { status: 404 }
-    );
-  }
-
-  if (!hasTablePermission(table, 'delete')) {
-    return NextResponse.json(
-      { error: 'Operation not permitted' },
-      { status: 403 }
-    );
-  }
-
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    }
-    const result = await deleteTableRow(table, id);
-    return NextResponse.json(result[0]);
-  } catch (error) {
-    console.error('Error deleting row:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, Check } from "lucide-react";
+import { ChevronLeft, Save } from "lucide-react";
 import { Table, TableRecord, TableColumn } from "./types";
 
 interface EditRecordFormProps {
@@ -26,16 +26,16 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
   onUpdateRecord,
 }) => {
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-slate-100 min-h-screen p-6 rounded-lg">
+    <div className="space-y-6">
       <div className="flex items-center mb-6">
         <button
-          className="flex items-center gap-1 px-3 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-200 shadow-sm mr-4 border border-slate-300"
+          className="admin-button-secondary flex items-center gap-2 mr-4"
           onClick={onBackToList}
         >
           <ChevronLeft size={18} />
           <span>Geri</span>
         </button>
-        <h2 className="text-2xl font-bold text-slate-800">
+        <h2 className="admin-title">
           {tables.find((t) => t.name === selectedTable)?.displayName ||
             selectedTable}{" "}
           Düzenle
@@ -43,20 +43,20 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
       </div>
 
       {recordLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="p-8 flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+        <div className="admin-card">
           <form onSubmit={onUpdateRecord} className="space-y-6">
             {tableColumns.map((column: TableColumn) => {
               // id kolonunu salt okunur göster
               if (column.name === "id") {
                 return (
-                  <div key={column.name} className="space-y-1">
+                  <div key={column.name} className="space-y-2">
                     <label
                       htmlFor={column.name}
-                      className="block text-sm font-medium text-slate-700"
+                      className="block text-sm font-medium text-admin-gray-300"
                     >
                       {column.name}
                     </label>
@@ -65,17 +65,17 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
                       id={column.name}
                       value={editRecord?.[column.name] || ""}
                       disabled
-                      className="block w-full px-4 py-3 rounded-md border border-slate-300 bg-slate-50 text-slate-500 cursor-not-allowed"
+                      className="admin-input w-full bg-admin-dark-blue-800 text-admin-gray-500 cursor-not-allowed"
                     />
                   </div>
                 );
               }
 
               return (
-                <div key={column.name} className="space-y-1">
+                <div key={column.name} className="space-y-2">
                   <label
                     htmlFor={column.name}
-                    className="block text-sm font-medium text-slate-700"
+                    className="block text-sm font-medium text-admin-gray-300"
                   >
                     {column.name}
                   </label>
@@ -85,25 +85,25 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
                     name={column.name}
                     value={editRecord?.[column.name] || ""}
                     onChange={onEditInputChange}
-                    className="block w-full px-4 py-3 rounded-md border border-slate-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700"
+                    className="admin-input w-full"
                   />
                 </div>
               );
             })}
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-6">
               <button
                 type="button"
-                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+                className="admin-button-secondary"
                 onClick={onBackToList}
               >
                 İptal
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md"
+                className="admin-button-primary flex items-center gap-2"
               >
-                <Check size={16} />
+                <Save size={18} />
                 <span>Güncelle</span>
               </button>
             </div>
