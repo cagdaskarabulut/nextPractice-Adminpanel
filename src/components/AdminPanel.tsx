@@ -807,23 +807,16 @@ export function AdminPanel() {
                   {/* Tablo Başlığı ve Yeni Kayıt Butonu */}
                   <div className="overflow-x-auto mb-6">
                     <div
-                      className={`flex justify-between items-center min-w-full pr-2 transition-all duration-300 ${
+                      className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 min-w-full pr-2 transition-all duration-300 ${
                         isSidebarOpen ? "pl-2" : "pl-8"
                       }`}
                     >
-                      <h2 className="admin-title truncate mr-4">
+                      <h2 className="admin-title truncate">
                         {
                           tables.find((t) => t.name === selectedTable)
                             ?.displayName
                         }
                       </h2>
-                      <button
-                        onClick={() => handleAddRecord(selectedTable!)}
-                        className="admin-button-primary flex-shrink-0 flex items-center gap-2 whitespace-nowrap"
-                      >
-                        <Plus size={18} />
-                        <span>Yeni Kayıt</span>
-                      </button>
                     </div>
                   </div>
 
@@ -838,57 +831,71 @@ export function AdminPanel() {
                       }`}
                     >
                       <div className="overflow-x-auto">
-                        <div className="min-w-full max-w-full">
-                          <table className="admin-table w-full table-fixed">
-                            <thead>
-                              <tr>
-                                {tableColumns.map((column) => (
-                                  <th
-                                    key={column.name}
-                                    className="w-auto max-w-[200px] truncate"
-                                  >
-                                    {column.name}
-                                  </th>
-                                ))}
-                                <th className="text-right w-24">İşlemler</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {tableRecords.map((record, index) => (
-                                <tr key={index}>
-                                  {tableColumns.map((column) => (
-                                    <td
-                                      key={column.name}
-                                      className="max-w-[200px] truncate"
-                                    >
-                                      {record[column.name]?.toString() || "-"}
-                                    </td>
-                                  ))}
-                                  <td className="text-right whitespace-nowrap">
-                                    <button
-                                      onClick={() =>
-                                        handleEditRecord(record.id)
-                                      }
-                                      className="text-admin-blue-500 hover:text-admin-blue-400 mr-3"
-                                      title="Düzenle"
-                                    >
-                                      <Pencil size={16} />
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteConfirm(record.id)
-                                      }
-                                      className="text-red-500 hover:text-red-400"
-                                      title="Sil"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </td>
-                                </tr>
+                        <button
+                          onClick={() => handleAddRecord(selectedTable!)}
+                          className="admin-button-primary flex-shrink-0 flex items-center gap-2 whitespace-nowrap"
+                        >
+                          <Plus size={18} />
+                          <span>Yeni Kayıt</span>
+                        </button>
+                        <table className="admin-table w-full min-w-[800px] table-auto mt-5">
+                          <colgroup>
+                            {tableColumns.map((column) => (
+                              <col
+                                key={column.name}
+                                className={
+                                  column.name === "id" ? "w-[80px]" : ""
+                                }
+                              />
+                            ))}
+                            <col className="w-[100px]" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              {tableColumns.map((column) => (
+                                <th
+                                  key={column.name}
+                                  className="whitespace-nowrap p-3 text-left"
+                                >
+                                  {column.name}
+                                </th>
                               ))}
-                            </tbody>
-                          </table>
-                        </div>
+                              <th className="text-right w-24 p-3">İşlemler</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tableRecords.map((record, index) => (
+                              <tr key={index}>
+                                {tableColumns.map((column) => (
+                                  <td
+                                    key={column.name}
+                                    className="whitespace-nowrap p-3 max-w-[300px] overflow-hidden text-ellipsis"
+                                  >
+                                    {record[column.name]?.toString() || "-"}
+                                  </td>
+                                ))}
+                                <td className="text-right whitespace-nowrap p-3">
+                                  <button
+                                    onClick={() => handleEditRecord(record.id)}
+                                    className="text-admin-blue-500 hover:text-admin-blue-400 mr-3"
+                                    title="Düzenle"
+                                  >
+                                    <Pencil size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteConfirm(record.id)
+                                    }
+                                    className="text-red-500 hover:text-red-400"
+                                    title="Sil"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}
