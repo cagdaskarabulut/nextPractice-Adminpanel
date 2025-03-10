@@ -1,0 +1,110 @@
+@layer components {
+  .admin-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .admin-card {
+    @apply bg-admin-dark-blue-800 rounded-lg shadow-card hover:shadow-card-hover transition-shadow p-6;
+  }
+  
+  .admin-sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-admin-dark-blue-800 shadow-lg;
+  }
+  
+  .admin-sidebar-link {
+    @apply flex items-center py-3 px-4 text-admin-gray-400 hover:text-white hover:bg-admin-dark-blue-700 rounded-md transition-colors;
+  }
+  
+  .admin-sidebar-link.active {
+    @apply text-white bg-admin-dark-blue-600;
+  }
+  
+  .admin-title {
+    @apply text-2xl font-bold text-white;
+  }
+  
+  .admin-subtitle {
+    @apply text-xl font-semibold text-admin-gray-200;
+  }
+  
+  .admin-button-primary {
+    @apply bg-admin-blue-500 hover:bg-admin-blue-400 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+  
+  .admin-button-secondary {
+    @apply bg-admin-dark-blue-700 hover:bg-admin-dark-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+  
+  .admin-table {
+    @apply w-full text-left;
+  }
+  
+  .admin-table th {
+    @apply py-3 px-4 text-admin-gray-400 font-medium uppercase tracking-wider border-b border-admin-dark-blue-700;
+  }
+  
+  .admin-table td {
+    @apply py-3 px-4 border-b border-admin-dark-blue-700;
+  }
+  
+  .admin-table tr:hover {
+    @apply bg-admin-dark-blue-700;
+  }
+  
+  .admin-input {
+    @apply bg-admin-dark-blue-700 border border-admin-dark-blue-600 text-white rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-admin-blue-500;
+  }
+  
+  .admin-search {
+    @apply bg-admin-dark-blue-700 border border-admin-dark-blue-600 text-white rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-admin-blue-500 w-full;
+  }
+  
+  .admin-toggle {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full bg-admin-dark-blue-700;
+  }
+  
+  .admin-toggle-active {
+    @apply bg-admin-blue-500;
+  }
+  
+  .admin-toggle-circle {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform;
+  }
+  
+  .admin-toggle-active .admin-toggle-circle {
+    @apply translate-x-5;
+  }
+}
+
+/* Kaydırma çubuğu stilleri */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #12263F;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2E4780;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3378FF;
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+} 

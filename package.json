@@ -6,7 +6,9 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "src/styles",
+    "scripts"
   ],
   "bin": {
     "easy-adminpanel": "dist/cli.js"
@@ -17,7 +19,8 @@
     "start": "next start",
     "lint": "next lint",
     "prepublishOnly": "npm run build:package",
-    "build:package": "tsc -p tsconfig.package.json && node scripts/copy-templates.js"
+    "build:package": "tsc -p tsconfig.package.json && node scripts/copy-templates.js",
+    "postinstall": "node scripts/postinstall.js"
   },
   "keywords": [
     "nextjs",
