@@ -13,6 +13,9 @@ import {
   X,
   Database,
   Menu,
+  Settings,
+  TableProperties,
+  LayoutGrid,
 } from "lucide-react";
 import { Table, AvailableTable, TableRecord, TableColumn } from "./types";
 import TableList from "./TableList";
@@ -513,7 +516,11 @@ export function AdminPanel() {
   return (
     <div className="space-y-6">
       {!selectedTable && !showAddForm && !showEditForm ? (
-        <div>
+        <div
+          className={`transition-all duration-300 ${
+            isSidebarOpen ? "pl-64" : "pl-0"
+          }`}
+        >
           {/* Ok Şeklinde Menü Açma/Kapama Butonu */}
           <button
             onClick={toggleSidebar}
@@ -540,10 +547,28 @@ export function AdminPanel() {
 
           {/* Sol Menü - Tablo Listesi (Ana Sayfa) */}
           <div
-            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[73px] overflow-y-auto z-10 transition-transform duration-300 ${
+            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[83px] overflow-y-auto z-10 transition-transform duration-300 ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
+            {/* Kart Görünümü Butonu - En Üstte */}
+            <button
+              onClick={handleBackToTables}
+              className="w-full mb-4 text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-1.5 text-admin-blue-500 hover:bg-admin-dark-blue-700"
+            >
+              <LayoutGrid size={18} className="text-admin-blue-500" />
+              <span className="font-medium">Kart Görünümü</span>
+            </button>
+
+            {/* Tabloları Yönet Butonu */}
+            <button
+              onClick={handleManageTablesFromSidebar}
+              className="w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-2 text-admin-blue-500 hover:bg-admin-dark-blue-700 mb-4"
+            >
+              <TableProperties size={18} className="text-admin-blue-500" />
+              <span className="font-medium">Tabloları Yönet</span>
+            </button>
+
             <h3 className="text-sm uppercase text-admin-gray-400 font-bold mb-4 pl-2 mt-4">
               Tablolar
             </h3>
@@ -559,29 +584,16 @@ export function AdminPanel() {
                 </button>
               ))}
             </div>
-            <div className="mt-6 border-t border-admin-dark-blue-700 pt-6 pl-2">
-              <button
-                onClick={handleManageTablesFromSidebar}
-                className="text-admin-blue-500 text-sm flex items-center gap-1.5 hover:text-admin-blue-400 transition-colors"
-              >
-                <PlusCircle size={14} />
-                <span>Tabloları Yönet</span>
-              </button>
-            </div>
           </div>
 
           {/* Tablo Yönetimi */}
-          <div
-            className={`flex justify-between items-center mb-6 pl-8 transition-all duration-300 ${
-              isSidebarOpen ? "pl-[calc(16rem+2rem)]" : "pl-8"
-            }`}
-          >
+          <div className="flex justify-between items-center mb-6 pl-8">
             <h2 className="admin-title">Veritabanı Tabloları</h2>
             <button
               onClick={fetchAllTables}
               className="admin-button-primary flex items-center gap-2"
             >
-              <PlusCircle size={18} />
+              <TableProperties size={18} />
               <span>Tabloları Yönet</span>
             </button>
           </div>
@@ -675,11 +687,7 @@ export function AdminPanel() {
               <p className="text-red-500">{error}</p>
             </div>
           ) : tables.length === 0 ? (
-            <div
-              className={`admin-card flex flex-col items-center p-12 text-center transition-all duration-300 ${
-                isSidebarOpen ? "mx-2" : "mx-8"
-              }`}
-            >
+            <div className="admin-card flex flex-col items-center p-12 text-center mx-8">
               <Database size={48} className="text-admin-gray-600 mb-4" />
               <h3 className="admin-subtitle mb-2">Henüz Tablo Bulunmuyor</h3>
               <p className="text-admin-gray-400 mb-6">
@@ -689,16 +697,12 @@ export function AdminPanel() {
                 onClick={fetchAllTables}
                 className="admin-button-primary flex items-center gap-2"
               >
-                <PlusCircle size={18} />
+                <TableProperties size={18} />
                 <span>Tabloları Yönet</span>
               </button>
             </div>
           ) : (
-            <div
-              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${
-                isSidebarOpen ? "px-2" : "px-8"
-              }`}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-8">
               {tables.map((table) => (
                 <div key={table.name} className="admin-card">
                   <h3 className="admin-subtitle mb-1">{table.displayName}</h3>
@@ -754,10 +758,28 @@ export function AdminPanel() {
 
           {/* Sol Menü - Tablo Listesi */}
           <div
-            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[73px] overflow-y-auto z-10 transition-transform duration-300 ${
+            className={`w-64 bg-admin-dark-blue-800 p-4 h-screen fixed top-0 left-0 bottom-0 pt-[83px] overflow-y-auto z-10 transition-transform duration-300 ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
+            {/* Kart Görünümü Butonu - En Üstte */}
+            <button
+              onClick={handleBackToTables}
+              className="w-full mb-4 text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-1.5 text-admin-blue-500 hover:bg-admin-dark-blue-700"
+            >
+              <LayoutGrid size={18} className="text-admin-blue-500" />
+              <span className="font-medium">Kart Görünümü</span>
+            </button>
+
+            {/* Tabloları Yönet Butonu */}
+            <button
+              onClick={handleManageTablesFromSidebar}
+              className="w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-2 text-admin-blue-500 hover:bg-admin-dark-blue-700 mb-4"
+            >
+              <TableProperties size={18} className="text-admin-blue-500" />
+              <span className="font-medium">Tabloları Yönet</span>
+            </button>
+
             <h3 className="text-sm uppercase text-admin-gray-400 font-bold mb-4 pl-2 mt-4">
               Tablolar
             </h3>
@@ -776,22 +798,6 @@ export function AdminPanel() {
                   {table.displayName}
                 </button>
               ))}
-            </div>
-            <div className="mt-6 border-t border-admin-dark-blue-700 pt-6 pl-2">
-              <button
-                onClick={handleManageTablesFromSidebar}
-                className="text-admin-blue-500 text-sm flex items-center gap-1.5 hover:text-admin-blue-400 transition-colors"
-              >
-                <PlusCircle size={14} />
-                <span>Tabloları Yönet</span>
-              </button>
-              <button
-                onClick={handleBackToTables}
-                className="text-admin-gray-400 text-sm flex items-center gap-1.5 mt-4 hover:text-white transition-colors"
-              >
-                <ChevronLeft size={14} />
-                <span>Kart Görünümü</span>
-              </button>
             </div>
           </div>
 
