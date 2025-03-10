@@ -56,6 +56,26 @@ After installation, follow these steps:
 
 4. On first use, select the tables you want to manage.
 
+## Component Usage
+
+You can also use the AdminPanel component directly in your application:
+
+```jsx
+import { AdminPanel } from 'easy-adminpanel';
+
+// Then use the component anywhere in your application
+export default function AdminPage() {
+  return (
+    <div>
+      <h1>My Admin Panel</h1>
+      <AdminPanel />
+    </div>
+  );
+}
+```
+
+This gives you more flexibility to integrate the admin panel into your existing layouts or add custom elements around it.
+
 ## Integration with Your Next.js Project
 
 To integrate programmatically, you can use it in your `next.config.js` file as follows:
