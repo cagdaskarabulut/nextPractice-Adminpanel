@@ -51,9 +51,7 @@ export const formatValueForInput = (
       case "checkbox":
         return false;
       case "date":
-        return "";
       case "datetime-local":
-        return "";
       case "time":
         return "";
       case "textarea-json":
@@ -67,34 +65,34 @@ export const formatValueForInput = (
     case "number":
       return value === "" ? "" : Number(value);
     case "checkbox":
-      return Boolean(value);
+      return value === "true" || value === true;
     case "date":
-      if (typeof value === "string" && value.includes("T")) {
-        // ISO string'den sadece tarih kısmını al
-        return value.split("T")[0];
+      if (typeof value === "string") {
+        if (value.includes("T")) {
+          return value.split("T")[0];
+        }
+        return value;
       }
-      return value;
+      return "";
     case "datetime-local":
       if (typeof value === "string") {
-        // ISO string'i datetime-local için formatla
         const date = new Date(value);
         if (!isNaN(date.getTime())) {
-          return date.toISOString().slice(0, 16); // "yyyy-MM-ddThh:mm" formatı
+          return date.toISOString().slice(0, 16);
         }
       }
-      return value;
+      return "";
     case "textarea-json":
       if (typeof value === "object") {
         return JSON.stringify(value, null, 2);
       }
       try {
-        // Düzgün JSON formatında göster
         return JSON.stringify(JSON.parse(value), null, 2);
       } catch {
         return value;
       }
     default:
-      return value;
+      return value?.toString() || "";
   }
 };
 
@@ -104,14 +102,24 @@ export const parseValueFromInput = (
   inputType: string,
   columnType: string | undefined
 ): any => {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+
   switch (inputType) {
     case "number":
-      return value === "" ? null : Number(value);
+      const num = Number(value);
+      return isNaN(num) ? null : num;
     case "checkbox":
-      return Boolean(value);
+      return value === "true" || value === true;
+    case "date":
+    case "datetime-local":
+      if (!value) return null;
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? null : date.toISOString();
     case "textarea-json":
       try {
-        return JSON.parse(value);
+        return typeof value === "string" ? JSON.parse(value) : value;
       } catch {
         return value;
       }
@@ -153,13 +161,13 @@ export const DynamicField: React.FC<DynamicFieldProps> = ({
             name={column.name}
             checked={Boolean(formattedValue)}
             onChange={(e) => {
-              onChange({
-                target: {
-                  name: column.name,
-                  value: e.target.checked,
-                  checked: e.target.checked,
-                },
-              });
+              const target = {
+                name: column.name,
+                type: "checkbox",
+                checked: e.target.checked,
+                value: e.target.checked.toString(),
+              };
+              onChange({ target });
             }}
             disabled={disabled}
             className="h-5 w-5 rounded border-admin-dark-blue-700 bg-admin-dark-blue-900 text-admin-blue-500 focus:ring-admin-blue-500"

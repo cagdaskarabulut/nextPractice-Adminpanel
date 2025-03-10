@@ -26,6 +26,7 @@ import EditRecordForm from "./EditRecordForm";
 import LoadingSpinner from "./ui/LoadingSpinner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getInputTypeForColumnType } from "./utils/FormFieldUtils";
 
 export function AdminPanel() {
   const [tables, setTables] = useState<Table[]>([]);
@@ -242,7 +243,6 @@ export function AdminPanel() {
     setShowRecordList(false);
     setShowEditForm(false);
     setRecordLoading(true);
-    setNewRecord({});
 
     // Tablo sütunlarını al
     fetch(`/api/${tableName}?_schema=true`)
@@ -251,10 +251,27 @@ export function AdminPanel() {
         setTableColumns(schema);
 
         // Başlangıç değerlerini oluştur
-        const initialValues: Record<string, string> = {};
+        const initialValues: Record<string, any> = {};
         schema.forEach((column: TableColumn) => {
           if (column.name !== "id") {
-            initialValues[column.name] = "";
+            const inputType = getInputTypeForColumnType(column.type);
+            switch (inputType) {
+              case "checkbox":
+                initialValues[column.name] = false;
+                break;
+              case "number":
+                initialValues[column.name] = "";
+                break;
+              case "date":
+              case "datetime-local":
+                initialValues[column.name] = "";
+                break;
+              case "textarea-json":
+                initialValues[column.name] = "";
+                break;
+              default:
+                initialValues[column.name] = "";
+            }
           }
         });
 
@@ -352,19 +369,15 @@ export function AdminPanel() {
   ) => {
     const target = e.target;
     const name = target.name;
+    const value =
+      "type" in target && target.type === "checkbox" && "checked" in target
+        ? target.checked
+        : target.value;
 
-    // Özel kontroller için (örneğin DynamicField'dan gelen checked değeri)
-    if ("checked" in target && target.checked !== undefined) {
-      setNewRecord((prev) => ({
-        ...prev,
-        [name]: target.checked,
-      }));
-    } else {
-      setNewRecord((prev) => ({
-        ...prev,
-        [name]: target.value,
-      }));
-    }
+    setNewRecord((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   // Form alanı değişikliğini işle (düzenleme için)
@@ -384,25 +397,18 @@ export function AdminPanel() {
   ) => {
     const target = e.target;
     const name = target.name;
+    const value =
+      "type" in target && target.type === "checkbox" && "checked" in target
+        ? target.checked
+        : target.value;
 
-    // Özel kontroller için (örneğin DynamicField'dan gelen checked değeri)
-    if ("checked" in target && target.checked !== undefined) {
-      setEditRecord((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          [name]: target.checked,
-        };
-      });
-    } else {
-      setEditRecord((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          [name]: target.value,
-        };
-      });
-    }
+    setEditRecord((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
   };
 
   // Yeni kayıt ekle
@@ -885,7 +891,7 @@ export function AdminPanel() {
           {/* Ana İçerik - Her Ekranda Menü Durumuna Göre Adapte Olur */}
           <div
             className={`flex-1 transition-all duration-300 ${
-              isSidebarOpen ? "pl-64" : "pl-0"
+              isSidebarOpen ? "pl-32" : "pl-0"
             }`}
           >
             <div className="p-4 md:p-6 pl-16">
