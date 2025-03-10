@@ -99,19 +99,6 @@ try {
       console.error("× admin.css dosyası pakette bulunamadı");
     }
 
-    // globals.css'e import ekle
-    const globalsPath = path.join(projectRoot, "src", "app", "globals.css");
-    if (fs.existsSync(globalsPath)) {
-      let globalsContent = fs.readFileSync(globalsPath, "utf8");
-      if (!globalsContent.includes('@import "../styles/admin.css"')) {
-        globalsContent = `@import "../styles/admin.css";\n${globalsContent}`;
-        fs.writeFileSync(globalsPath, globalsContent);
-        console.log("✓ globals.css güncellendi");
-      }
-    } else {
-      console.log("× globals.css bulunamadı, stil importu yapılamadı");
-    }
-
     // Tailwind config'i güncelle
     updateTailwindConfig();
   }
