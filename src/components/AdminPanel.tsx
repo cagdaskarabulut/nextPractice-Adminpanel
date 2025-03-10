@@ -16,6 +16,7 @@ import {
   Settings,
   TableProperties,
   LayoutGrid,
+  Layers,
 } from "lucide-react";
 import { Table, AvailableTable, TableRecord, TableColumn } from "./types";
 import TableList from "./TableList";
@@ -79,6 +80,10 @@ export function AdminPanel() {
   const [recordToDelete, setRecordToDelete] = useState<string | number | null>(
     null
   );
+  const [isNewTableModalOpen, setIsNewTableModalOpen] = useState(false);
+  const [newTableName, setNewTableName] = useState("");
+  const [columns, setColumns] = useState<{ name: string; type: string }[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
 
   // API endpoint'i - Doğru API rotalarına güncellendi
   // const apiUrl = "/api/admin";
@@ -499,6 +504,70 @@ export function AdminPanel() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Yeni kolon ekle
+  const addColumn = () => {
+    setColumns([...columns, { name: "", type: "" }]);
+  };
+
+  // Kolon değiştir
+  const handleColumnChange = (index: number, field: string, value: string) => {
+    setColumns((prevColumns) =>
+      prevColumns.map((column, i) =>
+        i === index ? { ...column, [field]: value } : column
+      )
+    );
+  };
+
+  // Kolon sil
+  const removeColumn = (index: number) => {
+    setColumns((prevColumns) => prevColumns.filter((_, i) => i !== index));
+  };
+
+  // Tablo oluştur
+  const createTable = async () => {
+    if (!newTableName || columns.length === 0) {
+      setError("Tablo adı ve kolonları gereklidir");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const response = await fetch(`/api/tables`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newTableName,
+          columns: columns.map((column) => ({
+            name: column.name,
+            type: column.type,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Tablo oluşturulurken bir hata oluştu");
+      }
+
+      alert("Tablo başarıyla oluşturuldu!");
+
+      // Tabloyu yükle
+      handleListTable(newTableName);
+
+      // Formu temizle
+      setNewTableName("");
+      setColumns([]);
+    } catch (err) {
+      alert(
+        "Tablo oluşturulurken bir hata oluştu: " +
+          (err instanceof Error ? err.message : "Bilinmeyen hata")
+      );
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -611,6 +680,18 @@ export function AdminPanel() {
                     <X size={20} />
                   </button>
                 </div>
+
+                {/* Yeni Tablo Butonu */}
+                <button
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setIsNewTableModalOpen(true);
+                  }}
+                  className="w-full mb-6 flex items-center justify-center gap-2 px-4 py-3 bg-admin-blue-500 text-white rounded-md hover:bg-admin-blue-400 transition-colors"
+                >
+                  <Layers size={18} />
+                  <span className="font-medium">Yeni Tablo Oluştur</span>
+                </button>
 
                 {/* Toplu Seçim Butonları */}
                 <div className="flex gap-3 mb-6 border-b border-admin-dark-blue-700 pb-4">
@@ -963,6 +1044,127 @@ export function AdminPanel() {
                 />
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Yeni Tablo Oluşturma Modal */}
+      {isNewTableModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="admin-card max-w-3xl w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="admin-subtitle">Yeni Tablo Oluştur</h2>
+              <button
+                onClick={() => setIsNewTableModalOpen(false)}
+                className="text-admin-gray-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                createTable();
+              }}
+            >
+              {error && (
+                <div className="bg-red-900/30 border border-red-500 text-red-300 p-3 rounded-md mb-4">
+                  {error}
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label className="block text-admin-gray-300 mb-2">
+                  Tablo Adı
+                </label>
+                <input
+                  type="text"
+                  value={newTableName}
+                  onChange={(e) => setNewTableName(e.target.value)}
+                  className="w-full bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
+                  placeholder="tablo_adi (küçük harfler ve alt çizgi kullanın)"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-admin-gray-300 mb-2">
+                  Kolonlar
+                </label>
+                {columns.map((column, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <input
+                      type="text"
+                      value={column.name}
+                      onChange={(e) =>
+                        handleColumnChange(index, "name", e.target.value)
+                      }
+                      className="flex-1 bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
+                      placeholder="Kolon adı"
+                      required
+                    />
+                    <select
+                      value={column.type}
+                      onChange={(e) =>
+                        handleColumnChange(index, "type", e.target.value)
+                      }
+                      className="w-40 bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
+                      required
+                    >
+                      <option value="">Tip seçin</option>
+                      <option value="text">Metin</option>
+                      <option value="number">Sayı</option>
+                      <option value="boolean">Evet/Hayır</option>
+                      <option value="date">Tarih</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => removeColumn(index)}
+                      className="text-red-500 hover:text-red-400"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addColumn}
+                  className="mt-3 text-admin-blue-500 hover:text-admin-blue-400 flex items-center gap-1 text-sm"
+                >
+                  <Plus size={14} />
+                  <span>Kolon Ekle</span>
+                </button>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsNewTableModalOpen(false)}
+                  className="admin-button-secondary"
+                  disabled={isCreating}
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="admin-button-primary flex items-center gap-2"
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                      <span>Oluşturuluyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={18} />
+                      <span>Tablo Oluştur</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

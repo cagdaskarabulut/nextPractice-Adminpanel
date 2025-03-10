@@ -1,29 +1,13 @@
 "use client";
 
 import { AdminPanel } from "@/components/AdminPanel";
-import {
-  Database,
-  Layers,
-  AlertCircle,
-  CheckCircle,
-  X,
-  Plus,
-  Check,
-} from "lucide-react";
+import { Database, AlertCircle, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function EasyAdminPage() {
   const router = useRouter();
   const title = process.env.EASY_ADMIN_TITLE || "Easy-AdminPanel";
-  const [isNewTableModalOpen, setIsNewTableModalOpen] = useState(false);
-  const [newTableName, setNewTableName] = useState("");
-  const [columns, setColumns] = useState([
-    { name: "id", type: "serial primary key" },
-    { name: "", type: "text" },
-  ]);
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState("");
   const [dbStatus, setDbStatus] = useState<
     "connected" | "disconnected" | "checking"
   >("checking");
@@ -60,83 +44,6 @@ export default function EasyAdminPage() {
 
     checkDbConnection();
   }, []);
-
-  // Kolon ekle
-  const addColumn = () => {
-    setColumns([...columns, { name: "", type: "text" }]);
-  };
-
-  // Kolon sil
-  const removeColumn = (index: number) => {
-    if (index === 0) return; // id kolonunu silmeyi engelle
-    const newColumns = [...columns];
-    newColumns.splice(index, 1);
-    setColumns(newColumns);
-  };
-
-  // Kolon adını güncelle
-  const updateColumnName = (index: number, value: string) => {
-    const newColumns = [...columns];
-    newColumns[index].name = value;
-    setColumns(newColumns);
-  };
-
-  // Kolon tipini güncelle
-  const updateColumnType = (index: number, value: string) => {
-    const newColumns = [...columns];
-    newColumns[index].type = value;
-    setColumns(newColumns);
-  };
-
-  // Yeni tablo oluştur
-  const createTable = async () => {
-    // Validasyon
-    if (!newTableName.trim()) {
-      setError("Tablo adı boş olamaz");
-      return;
-    }
-
-    if (columns.some((column) => !column.name.trim())) {
-      setError("Kolon adları boş olamaz");
-      return;
-    }
-
-    setIsCreating(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/create-table", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tableName: newTableName,
-          columns,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Tablo oluşturulurken bir hata oluştu");
-      }
-
-      // Başarılı
-      setIsNewTableModalOpen(false);
-      setNewTableName("");
-      setColumns([
-        { name: "id", type: "serial primary key" },
-        { name: "", type: "text" },
-      ]);
-
-      // Sayfayı yenile
-      window.location.href = "/easy-adminpanel";
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-admin-dark-blue-900 text-white">
@@ -185,13 +92,6 @@ export default function EasyAdminPage() {
                   </p>
                 </div>
               </div>
-              <button
-                className="admin-button-primary flex items-center gap-2"
-                onClick={() => setIsNewTableModalOpen(true)}
-              >
-                <Layers size={18} />
-                <span>Yeni Tablo</span>
-              </button>
             </div>
           </div>
         </div>
@@ -201,144 +101,6 @@ export default function EasyAdminPage() {
       <main className="admin-container py-8">
         <AdminPanel />
       </main>
-
-      {/* Yeni Tablo Oluşturma Modal */}
-      {isNewTableModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="admin-card max-w-3xl w-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="admin-subtitle">Yeni Tablo Oluştur</h2>
-              <button
-                onClick={() => setIsNewTableModalOpen(false)}
-                className="text-admin-gray-400 hover:text-white"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                createTable();
-              }}
-            >
-              {error && (
-                <div className="bg-red-900/30 border border-red-500 text-red-300 p-3 rounded-md mb-4">
-                  {error}
-                </div>
-              )}
-
-              <div className="mb-4">
-                <label className="block text-admin-gray-300 mb-2">
-                  Tablo Adı
-                </label>
-                <input
-                  type="text"
-                  value={newTableName}
-                  onChange={(e) => setNewTableName(e.target.value)}
-                  className="w-full bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
-                  placeholder="tablo_adi (küçük harfler ve alt çizgi kullanın)"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-admin-gray-300 mb-2">
-                  Kolonlar
-                </label>
-                <div className="space-y-3">
-                  {columns.map((column, index) => (
-                    <div key={index} className="flex gap-3">
-                      <input
-                        type="text"
-                        value={column.name}
-                        onChange={(e) =>
-                          updateColumnName(index, e.target.value)
-                        }
-                        className="w-full bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
-                        placeholder="Kolon adı"
-                        disabled={index === 0} // id kolonunu düzenlemeyi engelle
-                        required
-                      />
-                      <select
-                        value={column.type}
-                        onChange={(e) =>
-                          updateColumnType(index, e.target.value)
-                        }
-                        className="w-full bg-admin-dark-blue-900 border border-admin-dark-blue-700 rounded-md px-3 py-2 text-white focus:border-admin-blue-500 focus:outline-none"
-                        disabled={index === 0} // id kolonunu düzenlemeyi engelle
-                      >
-                        {index === 0 ? (
-                          <option value="serial primary key">
-                            serial primary key
-                          </option>
-                        ) : (
-                          <>
-                            <option value="text">text</option>
-                            <option value="integer">integer</option>
-                            <option value="bigint">bigint</option>
-                            <option value="decimal">decimal</option>
-                            <option value="boolean">boolean</option>
-                            <option value="date">date</option>
-                            <option value="timestamp">timestamp</option>
-                            <option value="json">json</option>
-                            <option value="uuid">uuid</option>
-                          </>
-                        )}
-                      </select>
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => removeColumn(index)}
-                          className="bg-red-500/30 hover:bg-red-500/50 text-white px-3 py-1 rounded-md transition-colors"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={addColumn}
-                  className="mt-3 text-admin-blue-500 hover:text-admin-blue-400 flex items-center gap-1 text-sm"
-                >
-                  <Plus size={14} />
-                  <span>Kolon Ekle</span>
-                </button>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsNewTableModalOpen(false)}
-                  className="admin-button-secondary"
-                  disabled={isCreating}
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  className="admin-button-primary flex items-center gap-2"
-                  disabled={isCreating}
-                >
-                  {isCreating ? (
-                    <>
-                      <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
-                      <span>Oluşturuluyor...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check size={18} />
-                      <span>Tablo Oluştur</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
