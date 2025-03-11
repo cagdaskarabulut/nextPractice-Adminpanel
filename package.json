@@ -7,10 +7,12 @@
   "files": [
     "dist",
     "templates",
-    "scripts"
+    "scripts",
+    "helper_easy-adminpanel"
   ],
   "bin": {
-    "easy-adminpanel": "dist/cli.js"
+    "easy-adminpanel": "dist/cli.js",
+    "easy-adminpanel-setup": "helper_easy-adminpanel/installHelper.js"
   },
   "scripts": {
     "dev": "next dev",
@@ -19,7 +21,7 @@
     "lint": "next lint",
     "prepublishOnly": "npm run build:package",
     "build:package": "tsc -p tsconfig.package.json && node scripts/copy-templates.js",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node -e \"console.log('\\x1b[32m\\x1b[1m\\nEasy AdminPanel kurulumu tamamlandı!\\n\\nTasarım dosyalarını projenize eklemek için:\\n\\nnpx easy-adminpanel-setup\\n\\nkomutunu çalıştırın.\\x1b[0m\\n')\""
   },
   "keywords": [
     "nextjs",
