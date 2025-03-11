@@ -84,13 +84,13 @@ export default function AdminLayout({ children }) {
 }
   `.trim();
 
-  const defaultPageContent = `
-import { AdminPanel } from 'easy-adminpanel';
+  const defaultPageContent = `"use client";
+
+import { AdminPanel } from '@/styles/adminpanel';
 
 export default function AdminPage() {
   return <AdminPanel />;
-}
-  `.trim();
+}`.trim();
 
   // Admin sayfalarını oluştur
   const layoutPath = path.join(

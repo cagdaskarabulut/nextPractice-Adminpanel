@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 
 // CSS dosyasını içe aktarmak için bir fonksiyon
-const injectStylesheet = () => {
+export const injectStylesheet = () => {
   // Eğer stil zaten yüklenmişse tekrar yükleme
   if (document.getElementById("easy-adminpanel-styles")) {
     return;
