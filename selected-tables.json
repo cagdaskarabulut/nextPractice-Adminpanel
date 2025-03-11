@@ -2,7 +2,6 @@
   "tables": [
     "arabulucu_message",
     "arabulucubul-arabulucu",
-    "article",
     "test",
     "topic",
     "yellcord_notifications",
