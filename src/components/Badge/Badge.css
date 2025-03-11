@@ -1,0 +1,83 @@
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-2);
+  height: 22px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.admin-badge-primary {
+  background-color: var(--color-blue-500);
+  color: var(--color-white);
+}
+
+.admin-badge-secondary {
+  background-color: var(--color-dark-blue-600);
+  color: var(--color-white);
+}
+
+.admin-badge-success {
+  background-color: #43a047;
+  color: var(--color-white);
+}
+
+.admin-badge-danger {
+  background-color: #e53935;
+  color: var(--color-white);
+}
+
+.admin-badge-warning {
+  background-color: #ff9800;
+  color: #212121;
+}
+
+.admin-badge-info {
+  background-color: #2196f3;
+  color: var(--color-white);
+}
+
+.admin-badge-light {
+  background-color: var(--color-gray-300);
+  color: var(--color-dark-blue-900);
+}
+
+.admin-badge-dark {
+  background-color: var(--color-dark-blue-800);
+  color: var(--color-white);
+}
+
+.admin-badge-outline {
+  background-color: transparent;
+  border: 1px solid currentColor;
+}
+
+.admin-badge-outline.admin-badge-primary {
+  color: var(--color-blue-500);
+}
+
+.admin-badge-outline.admin-badge-secondary {
+  color: var(--color-gray-400);
+}
+
+.admin-badge-outline.admin-badge-success {
+  color: #43a047;
+}
+
+.admin-badge-outline.admin-badge-danger {
+  color: #e53935;
+}
+
+.admin-badge-with-icon {
+  padding-left: var(--spacing-1);
+  gap: var(--spacing-1);
+}
+
+.admin-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} 

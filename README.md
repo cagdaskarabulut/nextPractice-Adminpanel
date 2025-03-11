@@ -76,6 +76,8 @@ export default function AdminPage() {
 
 This gives you more flexibility to integrate the admin panel into your existing layouts or add custom elements around it.
 
+> **Note**: The AdminPanel component includes all necessary styles internally, so you don't need to import any additional CSS files. The dark blue theme will be automatically applied to ensure a consistent look and feel across all projects.
+
 ## Integration with Your Next.js Project
 
 To integrate programmatically, you can use it in your `next.config.js` file as follows:
