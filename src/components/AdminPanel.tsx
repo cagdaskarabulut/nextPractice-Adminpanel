@@ -212,14 +212,16 @@ export function AdminPanel() {
 
     try {
       // Önce tablo sütunlarını al
-      const schemaResponse = await fetch(`/api/${tableName}?_schema=true`);
+      const schemaResponse = await fetch(
+        `/api/resources/${tableName}?_schema=true`
+      );
       if (schemaResponse.ok) {
         const schema = await schemaResponse.json();
         setTableColumns(schema);
       }
 
       // Sonra kayıtları al
-      const response = await fetch(`/api/${tableName}`);
+      const response = await fetch(`/api/resources/${tableName}`);
       if (!response.ok) {
         throw new Error("Kayıtlar alınırken bir hata oluştu");
       }
@@ -236,6 +238,25 @@ export function AdminPanel() {
     }
   };
 
+  // Tablo kolonlarını getir
+  const getTableColumns = (tableName: string) => {
+    setTableColumns([]);
+
+    fetch(`/api/resources/${tableName}?_schema=true`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Tablo şeması alınamadı");
+        }
+        return response.json();
+      })
+      .then((columns) => {
+        setTableColumns(columns);
+      })
+      .catch((error) => {
+        console.error("Tablo şeması alınamadı:", error);
+      });
+  };
+
   // Yeni kayıt formunu aç
   const handleAddRecord = (tableName: string) => {
     setSelectedTable(tableName);
@@ -245,46 +266,7 @@ export function AdminPanel() {
     setRecordLoading(true);
 
     // Tablo sütunlarını al
-    fetch(`/api/${tableName}?_schema=true`)
-      .then((res) => res.json())
-      .then((schema) => {
-        setTableColumns(schema);
-
-        // Başlangıç değerlerini oluştur
-        const initialValues: Record<string, any> = {};
-        schema.forEach((column: TableColumn) => {
-          if (column.name !== "id") {
-            const inputType = getInputTypeForColumnType(column.type);
-            switch (inputType) {
-              case "checkbox":
-                initialValues[column.name] = false;
-                break;
-              case "number":
-                initialValues[column.name] = "";
-                break;
-              case "date":
-              case "datetime-local":
-                initialValues[column.name] = "";
-                break;
-              case "textarea-json":
-                initialValues[column.name] = "";
-                break;
-              default:
-                initialValues[column.name] = "";
-            }
-          }
-        });
-
-        setNewRecord(initialValues);
-        setRecordLoading(false);
-      })
-      .catch((err) => {
-        alert(
-          "Tablo şeması alınırken bir hata oluştu: " +
-            (err instanceof Error ? err.message : "Bilinmeyen hata")
-        );
-        setRecordLoading(false);
-      });
+    getTableColumns(tableName);
   };
 
   // Kaydı düzenleme formunu aç
@@ -298,7 +280,7 @@ export function AdminPanel() {
 
     try {
       // Kaydı getir
-      const response = await fetch(`/api/${selectedTable}/${id}`);
+      const response = await fetch(`/api/resources/${selectedTable}?id=${id}`);
       if (!response.ok) {
         throw new Error("Kayıt alınırken bir hata oluştu");
       }
@@ -328,9 +310,12 @@ export function AdminPanel() {
     if (!selectedTable || !recordToDelete) return;
 
     try {
-      const response = await fetch(`/api/${selectedTable}/${recordToDelete}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/resources/${selectedTable}?id=${recordToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Kayıt silinirken bir hata oluştu");
@@ -418,7 +403,7 @@ export function AdminPanel() {
     if (!selectedTable) return;
 
     try {
-      const response = await fetch(`/api/${selectedTable}`, {
+      const response = await fetch(`/api/resources/${selectedTable}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -459,7 +444,7 @@ export function AdminPanel() {
     if (!selectedTable || !editRecord) return;
 
     try {
-      const response = await fetch(`/api/${selectedTable}/${editRecord.id}`, {
+      const response = await fetch(`/api/resources/${selectedTable}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
