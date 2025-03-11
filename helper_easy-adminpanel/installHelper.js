@@ -67,6 +67,118 @@ const createDirectories = () => {
   });
 };
 
+// Admin sayfalarını oluştur
+const createAdminPages = () => {
+  console.log(
+    `${colors.yellow}» ${colors.reset}Admin sayfaları oluşturuluyor...`
+  );
+
+  // Admin sayfaları için varsayılan içerikler
+  const defaultLayoutContent = `
+export default function AdminLayout({ children }) {
+  return (
+    <div className="easy-adminpanel">
+      {children}
+    </div>
+  );
+}
+  `.trim();
+
+  const defaultPageContent = `
+import { AdminPanel } from 'easy-adminpanel';
+
+export default function AdminPage() {
+  return <AdminPanel />;
+}
+  `.trim();
+
+  // Admin sayfalarını oluştur
+  const layoutPath = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "admin",
+    "layout.tsx"
+  );
+  const pagePath = path.join(projectRoot, "src", "app", "admin", "page.tsx");
+
+  // Önce templates klasöründen kopyalamayı dene
+  let templatesFound = false;
+  try {
+    // Farklı potansiyel template dizinlerini dene
+    const possibleTemplateDirs = [
+      path.join(path.dirname(path.dirname(helperDir)), "templates"),
+      path.join(path.dirname(helperDir), "templates"),
+      path.join(helperDir, "templates"),
+      path.join(projectRoot, "node_modules", "easy-adminpanel", "templates"),
+      path.join(
+        projectRoot,
+        "node_modules",
+        "easy-adminpanel",
+        "dist",
+        "templates"
+      ),
+    ];
+
+    for (const templateDir of possibleTemplateDirs) {
+      if (fs.existsSync(templateDir)) {
+        console.log(
+          `${colors.blue}ℹ ${colors.reset}Templates dizini bulundu: ${templateDir}`
+        );
+
+        // Layout dosyasını kopyala
+        const layoutTemplatePath = path.join(templateDir, "layout.tsx");
+        if (fs.existsSync(layoutTemplatePath)) {
+          fs.copyFileSync(layoutTemplatePath, layoutPath);
+          console.log(
+            `${colors.green}✓ ${colors.reset}Layout dosyası kopyalandı: ${layoutPath}`
+          );
+          templatesFound = true;
+        }
+
+        // Page dosyasını kopyala
+        const pageTemplatePath = path.join(templateDir, "page.tsx");
+        if (fs.existsSync(pageTemplatePath)) {
+          fs.copyFileSync(pageTemplatePath, pagePath);
+          console.log(
+            `${colors.green}✓ ${colors.reset}Page dosyası kopyalandı: ${pagePath}`
+          );
+          templatesFound = true;
+        }
+
+        if (templatesFound) break;
+      }
+    }
+  } catch (error) {
+    console.log(
+      `${colors.yellow}⚠️ ${colors.reset}Template arama hatası: ${error.message}`
+    );
+  }
+
+  // Eğer templates bulunamadıysa varsayılan dosyaları oluştur
+  if (!templatesFound) {
+    console.log(
+      `${colors.yellow}⚠️ ${colors.reset}Template dosyaları bulunamadı, varsayılan dosyalar oluşturuluyor...`
+    );
+
+    // Layout dosyasını oluştur
+    if (!fs.existsSync(layoutPath)) {
+      fs.writeFileSync(layoutPath, defaultLayoutContent);
+      console.log(
+        `${colors.green}✓ ${colors.reset}Varsayılan layout.tsx oluşturuldu: ${layoutPath}`
+      );
+    }
+
+    // Page dosyasını oluştur
+    if (!fs.existsSync(pagePath)) {
+      fs.writeFileSync(pagePath, defaultPageContent);
+      console.log(
+        `${colors.green}✓ ${colors.reset}Varsayılan page.tsx oluşturuldu: ${pagePath}`
+      );
+    }
+  }
+};
+
 // Dosyaların kopyalanması
 const copyFiles = () => {
   // UI bileşenleri
@@ -117,40 +229,6 @@ const copyFiles = () => {
   const stylesDest = path.join(projectRoot, "src", "styles", "adminpanel.tsx");
   fs.copyFileSync(stylesFile, stylesDest);
   console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${stylesDest}`);
-
-  // Admin sayfalarını kopyala - easy-adminpanel yerine admin klasörüne
-  try {
-    // Eğer templates klasöründe ilgili dosyalar varsa onları kullan
-    const templatesDir = path.join(
-      path.dirname(path.dirname(helperDir)),
-      "templates"
-    );
-
-    // layout.tsx ve page.tsx dosyaları için
-    if (fs.existsSync(path.join(templatesDir, "layout.tsx"))) {
-      fs.copyFileSync(
-        path.join(templatesDir, "layout.tsx"),
-        path.join(projectRoot, "src", "app", "admin", "layout.tsx")
-      );
-      console.log(
-        `${colors.green}✓ ${colors.reset}Kopyalandı: src/app/admin/layout.tsx`
-      );
-    }
-
-    if (fs.existsSync(path.join(templatesDir, "page.tsx"))) {
-      fs.copyFileSync(
-        path.join(templatesDir, "page.tsx"),
-        path.join(projectRoot, "src", "app", "admin", "page.tsx")
-      );
-      console.log(
-        `${colors.green}✓ ${colors.reset}Kopyalandı: src/app/admin/page.tsx`
-      );
-    }
-  } catch (error) {
-    console.error(
-      `${colors.red}✗ ${colors.reset}Admin sayfaları kopyalanırken hata oluştu: ${error.message}`
-    );
-  }
 };
 
 // Belge kontrolü
@@ -202,6 +280,7 @@ try {
   cleanupOldFiles();
   createDirectories();
   copyFiles();
+  createAdminPages(); // Admin sayfalarını oluştur
   checkDependencies();
   checkDocumentation();
 
