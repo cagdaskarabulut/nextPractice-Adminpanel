@@ -19,7 +19,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { tableName, columns } = data;
+    // AdminPanel.tsx'den gelen "name" parametresini veya "tableName" parametresini kullan
+    const tableName = data.tableName || data.name;
+    const columns = data.columns;
 
     if (!tableName || !columns || !Array.isArray(columns) || columns.length === 0) {
       return NextResponse.json(

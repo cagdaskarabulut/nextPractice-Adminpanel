@@ -1,21 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import fs from 'fs/promises';
 import path from 'path';
 
-// Seçilen tabloları JSON dosyasına kaydeden API endpoint'i
+// Seçilen tabloları kaydet
 export async function POST(request: NextRequest) {
   try {
-    const { tables } = await request.json();
+    const data = await request.json();
+    const { tables } = data;
 
-    // Seçilen tabloları bir JSON dosyasına kaydet
-    const configPath = path.join(process.cwd(), 'selected-tables.json');
-    await writeFile(configPath, JSON.stringify({ tables }, null, 2), 'utf-8');
+    if (!Array.isArray(tables)) {
+      return NextResponse.json(
+        { error: 'Geçersiz veri formatı. "tables" bir dizi olmalıdır.' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ success: true, tables });
-  } catch (error: any) {
-    console.error('Tablolar kaydedilemedi:', error);
+    // Konfigürasyon dosyasının yolu
+    const configDir = path.join(process.cwd(), 'src', 'config');
+    const configFile = path.join(configDir, 'tables.json');
+
+    // Dizinin var olduğundan emin ol
+    try {
+      await fs.mkdir(configDir, { recursive: true });
+    } catch (err) {
+      // Dizin zaten varsa hata vermez
+    }
+
+    // Tabloları JSON olarak kaydet
+    await fs.writeFile(
+      configFile,
+      JSON.stringify({ selectedTables: tables }, null, 2)
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Tablolar kaydedilirken hata oluştu:', error);
     return NextResponse.json(
-      { error: error.message || 'Tablolar kaydedilemedi' },
+      { error: 'Tablolar kaydedilirken bir hata oluştu' },
       { status: 500 }
     );
   }

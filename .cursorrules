@@ -25,6 +25,7 @@ Bu proje, **React-Admin** kütüphanesi kullanılarak **Next.js** tabanlı bir *
 - **Otomatik schema okuma** mekanizması geliştirilecektir.
 - CRUD ekranları oluşturulurken **tabloların kolon tipleri** doğru şekilde algılanacak ve uygun input bileşenleri ile esnek form yapıları desteklenecektir.
 - **Seçilen tablolar için kullanıcı; `SELECT`, `INSERT`, `UPDATE`, `DELETE` işlemlerini gerçekleştirebilecektir.**
+- Veritabanı ile iletişim halinde olan tüm api'ler /Users/cagdas/Desktop/workspace/nextPractice/adminpanel/src/app/api adresi altında konu başlığına gçre klasörlenerek tutulur.
 
 **Beklenen Sonuç:**
 - Kullanıcı **yeni bir tablo belirlediğinde**, sistem **sadece bu tablolar için CRUD ekranlarını oluşturur.**
