@@ -150,72 +150,6 @@ export async function deleteRecord(tableName: string, id: string | number) {
   }
 }
 
-// Yeni tablo oluştur
-export async function createTable(tableName: string, columns: Array<{ name: string; type: string; nullable?: boolean; default_value?: string }>) {
-  try {
-    const client = await pool.connect();
-
-    // SQL injection koruması için tablo adını doğrula
-    const tableNamePattern = /^[a-zA-Z0-9_]+$/;
-    if (!tableNamePattern.test(tableName)) {
-      throw new Error('Geçersiz tablo adı. Sadece harf, rakam ve alt çizgi kullanılabilir.');
-    }
-
-    // Tablo oluşturma SQL cümlesini hazırla
-    const columnDefinitions = columns.map(column => {
-      // SQL injection koruması için kolon adını doğrula
-      if (!tableNamePattern.test(column.name)) {
-        throw new Error(`Geçersiz kolon adı: ${column.name}. Sadece harf, rakam ve alt çizgi kullanılabilir.`);
-      }
-
-      // Güvenli bir tip listesi oluştur ve sadece bu tiplere izin ver
-      const allowedTypes = [
-        'text', 'varchar', 'character varying', 'char', 'character',
-        'integer', 'int', 'smallint', 'bigint', 'serial', 'bigserial',
-        'numeric', 'decimal', 'real', 'double precision', 'float',
-        'boolean', 'bool',
-        'date', 'time', 'timestamp', 'timestamptz', 'timestamp with time zone',
-        'json', 'jsonb', 'uuid'
-      ];
-
-      const lowerType = column.type.toLowerCase();
-      if (!allowedTypes.includes(lowerType) && !lowerType.startsWith('varchar(')) {
-        throw new Error(`Desteklenmeyen kolon tipi: ${column.type}`);
-      }
-
-      let columnDef = `"${column.name}" ${column.type}`;
-
-      // Null durumunu ekle
-      if (column.nullable === false) {
-        columnDef += ' NOT NULL';
-      }
-
-      // Varsayılan değeri ekle (eğer varsa)
-      if (column.default_value) {
-        columnDef += ` DEFAULT ${column.default_value}`;
-      }
-
-      return columnDef;
-    });
-
-    // id kolonunu otomatik ekle
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS "${tableName}" (
-        id SERIAL PRIMARY KEY,
-        ${columnDefinitions.join(',\n        ')}
-      )
-    `;
-
-    await client.query(createTableQuery);
-    client.release();
-
-    return { success: true, message: `Tablo ${tableName} başarıyla oluşturuldu.` };
-  } catch (error: any) {
-    console.error(`Tablo ${tableName} oluşturulamadı:`, error);
-    throw new Error(error.message || 'Tablo oluşturulamadı');
-  }
-}
-
 export default {
   getTables,
   getTableColumns,
@@ -223,6 +157,5 @@ export default {
   getRecord,
   addRecord,
   updateRecord,
-  deleteRecord,
-  createTable
+  deleteRecord
 }; 

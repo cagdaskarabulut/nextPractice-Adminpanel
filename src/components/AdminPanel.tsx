@@ -212,16 +212,14 @@ export function AdminPanel() {
 
     try {
       // Önce tablo sütunlarını al
-      const schemaResponse = await fetch(
-        `/api/resources/${tableName}?_schema=true`
-      );
+      const schemaResponse = await fetch(`/api/${tableName}?_schema=true`);
       if (schemaResponse.ok) {
         const schema = await schemaResponse.json();
         setTableColumns(schema);
       }
 
       // Sonra kayıtları al
-      const response = await fetch(`/api/resources/${tableName}`);
+      const response = await fetch(`/api/${tableName}`);
       if (!response.ok) {
         throw new Error("Kayıtlar alınırken bir hata oluştu");
       }
@@ -238,25 +236,6 @@ export function AdminPanel() {
     }
   };
 
-  // Tablo kolonlarını getir
-  const getTableColumns = (tableName: string) => {
-    setTableColumns([]);
-
-    fetch(`/api/resources/${tableName}?_schema=true`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Tablo şeması alınamadı");
-        }
-        return response.json();
-      })
-      .then((columns) => {
-        setTableColumns(columns);
-      })
-      .catch((error) => {
-        console.error("Tablo şeması alınamadı:", error);
-      });
-  };
-
   // Yeni kayıt formunu aç
   const handleAddRecord = (tableName: string) => {
     setSelectedTable(tableName);
@@ -266,7 +245,46 @@ export function AdminPanel() {
     setRecordLoading(true);
 
     // Tablo sütunlarını al
-    getTableColumns(tableName);
+    fetch(`/api/${tableName}?_schema=true`)
+      .then((res) => res.json())
+      .then((schema) => {
+        setTableColumns(schema);
+
+        // Başlangıç değerlerini oluştur
+        const initialValues: Record<string, any> = {};
+        schema.forEach((column: TableColumn) => {
+          if (column.name !== "id") {
+            const inputType = getInputTypeForColumnType(column.type);
+            switch (inputType) {
+              case "checkbox":
+                initialValues[column.name] = false;
+                break;
+              case "number":
+                initialValues[column.name] = "";
+                break;
+              case "date":
+              case "datetime-local":
+                initialValues[column.name] = "";
+                break;
+              case "textarea-json":
+                initialValues[column.name] = "";
+                break;
+              default:
+                initialValues[column.name] = "";
+            }
+          }
+        });
+
+        setNewRecord(initialValues);
+        setRecordLoading(false);
+      })
+      .catch((err) => {
+        alert(
+          "Tablo şeması alınırken bir hata oluştu: " +
+            (err instanceof Error ? err.message : "Bilinmeyen hata")
+        );
+        setRecordLoading(false);
+      });
   };
 
   // Kaydı düzenleme formunu aç
@@ -280,7 +298,7 @@ export function AdminPanel() {
 
     try {
       // Kaydı getir
-      const response = await fetch(`/api/resources/${selectedTable}?id=${id}`);
+      const response = await fetch(`/api/${selectedTable}/${id}`);
       if (!response.ok) {
         throw new Error("Kayıt alınırken bir hata oluştu");
       }
@@ -310,12 +328,9 @@ export function AdminPanel() {
     if (!selectedTable || !recordToDelete) return;
 
     try {
-      const response = await fetch(
-        `/api/resources/${selectedTable}?id=${recordToDelete}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/${selectedTable}/${recordToDelete}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         throw new Error("Kayıt silinirken bir hata oluştu");
@@ -403,7 +418,7 @@ export function AdminPanel() {
     if (!selectedTable) return;
 
     try {
-      const response = await fetch(`/api/resources/${selectedTable}`, {
+      const response = await fetch(`/api/${selectedTable}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -444,7 +459,7 @@ export function AdminPanel() {
     if (!selectedTable || !editRecord) return;
 
     try {
-      const response = await fetch(`/api/resources/${selectedTable}`, {
+      const response = await fetch(`/api/${selectedTable}/${editRecord.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -523,13 +538,13 @@ export function AdminPanel() {
 
     try {
       setIsCreating(true);
-      const response = await fetch(`/api/tables`, {
+      const response = await fetch(`/api/create-table`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: newTableName,
+          tableName: newTableName,
           columns: columns.map((column) => ({
             name: column.name,
             type: column.type,
@@ -538,17 +553,42 @@ export function AdminPanel() {
       });
 
       if (!response.ok) {
-        throw new Error("Tablo oluşturulurken bir hata oluştu");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Tablo oluşturulurken bir hata oluştu"
+        );
       }
 
+      const result = await response.json();
       alert("Tablo başarıyla oluşturuldu!");
 
-      // Tabloyu yükle
-      handleListTable(newTableName);
+      // Tablo oluşturuldu, önce state'i temizleyelim
+      setTableRecords([]);
+      setTableColumns([]);
+
+      // Tabloları yenileyelim, sonra yeni tabloyu listeleyeceğiz
+      setLoading(true);
+      try {
+        const tablesResponse = await fetch(`/api/tables`);
+        if (tablesResponse.ok) {
+          const data = await tablesResponse.json();
+          setTables(data);
+          // Eklenen tabloyu tables listesine ekledikten sonra listeleyebiliriz
+          setLoading(false);
+          // Yeni tabloyu listeleme - API'den gelen tableName'i kullan
+          handleListTable(result.tableName || newTableName);
+        }
+      } catch (err) {
+        console.error("Tablolar yüklenemedi:", err);
+        setLoading(false);
+      }
 
       // Formu temizle
       setNewTableName("");
       setColumns([]);
+
+      // Modalı kapat
+      setIsNewTableModalOpen(false);
     } catch (err) {
       alert(
         "Tablo oluşturulurken bir hata oluştu: " +

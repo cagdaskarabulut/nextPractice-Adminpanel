@@ -1,54 +1,42 @@
 import { NextResponse } from 'next/server';
-import { getSelectedTables, handleApiError, apiSuccess } from '@/app/api/utils/api-utils';
 import * as db from '@/utils/db';
-import { writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import path from 'path';
+import fs from 'fs';
 
-// Tablo listesini getir
 export async function GET() {
   try {
-    // Ortak kütüphanedeki fonksiyonu kullan
-    const selectedTables = await getSelectedTables();
+    // Tüm tabloları veritabanından al
+    const allTables = await db.getTables();
+
+    // Seçilen tabloları JSON dosyasından oku
+    let selectedTableNames: string[] = [];
+    const configPath = path.join(process.cwd(), 'selected-tables.json');
+
+    // Dosya varsa oku, yoksa tüm tabloları göster
+    if (fs.existsSync(configPath)) {
+      const configData = await readFile(configPath, 'utf-8');
+      const config = JSON.parse(configData);
+      selectedTableNames = config.tables || [];
+    } else {
+      // Konfigürasyon dosyası yoksa, tüm tabloları göster
+      selectedTableNames = allTables.map(table => table.name);
+    }
+
+    // Sadece seçilen tabloları filtrele
+    const selectedTables = allTables
+      .filter(table => selectedTableNames.includes(table.name))
+      .map(table => ({
+        name: table.name,
+        displayName: table.name.charAt(0).toUpperCase() + table.name.slice(1).replace(/_/g, ' ')
+      }));
+
     return NextResponse.json(selectedTables);
   } catch (error: any) {
-    return handleApiError(error, 'Veritabanı tabloları alınamadı');
-  }
-}
-
-// Yeni tablo ekle
-export async function POST(request: Request) {
-  try {
-    const data = await request.json();
-    // AdminPanel.tsx'den gelen "name" parametresini veya "tableName" parametresini kullan
-    const tableName = data.tableName || data.name;
-    const columns = data.columns;
-
-    if (!tableName || !columns || !Array.isArray(columns) || columns.length === 0) {
-      return NextResponse.json(
-        { error: 'Geçersiz tablo yapısı. Tablo adı ve en az bir kolon gereklidir.' },
-        { status: 400 }
-      );
-    }
-
-    // Veritabanında tabloyu oluştur
-    await db.createTable(tableName, columns);
-
-    // Seçili tablolara yeni tabloyu ekle
-    const configPath = path.join(process.cwd(), 'selected-tables.json');
-    const configData = await getSelectedTables();
-    const currentTables = configData.map(t => t.name);
-
-    // Eğer tablo listede yoksa ekle
-    if (!currentTables.includes(tableName)) {
-      currentTables.push(tableName);
-      await writeFile(
-        configPath,
-        JSON.stringify({ tables: currentTables }, null, 2)
-      );
-    }
-
-    return apiSuccess({ success: true, message: `${tableName} tablosu başarıyla oluşturuldu.` });
-  } catch (error: any) {
-    return handleApiError(error, 'Tablo oluşturulurken bir hata oluştu');
+    console.error('Tablolar alınamadı:', error);
+    return NextResponse.json(
+      { error: error.message || 'Veritabanı tabloları alınamadı' },
+      { status: 500 }
+    );
   }
 } 

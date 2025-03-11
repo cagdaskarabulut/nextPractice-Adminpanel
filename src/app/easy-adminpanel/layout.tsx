@@ -1,13 +1,9 @@
-export default function AdminPanelLayout({
+import React from "react";
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-screen">{children}</div>;
+  return <div>{children}</div>;
 }
-
-export const metadata = {
-  title: "Easy AdminPanel - Vercel PostgreSQL Yönetim Arayüzü",
-  description:
-    "Next.js projeleri için otomatik PostgreSQL tablo yönetimi ve CRUD arayüzü",
-};
