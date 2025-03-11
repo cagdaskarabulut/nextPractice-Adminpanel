@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSelectedTables, handleApiError, apiSuccess } from '@/shared/api-utils';
+import { getSelectedTables, handleApiError, apiSuccess } from '@/app/api/utils/api-utils';
 import * as db from '@/utils/db';
 import { writeFile } from 'fs/promises';
 import path from 'path';

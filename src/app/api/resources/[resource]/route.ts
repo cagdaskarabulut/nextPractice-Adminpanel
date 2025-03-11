@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client } from 'pg';
-import { handleApiError, apiSuccess } from '@/shared/api-utils';
+import { handleApiError, apiSuccess } from '@/app/api/utils/api-utils';
 
 // Veritabanı bağlantısı oluştur
 async function getClient() {

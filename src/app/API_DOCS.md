@@ -20,10 +20,11 @@ API'ler aşağıdaki yapıda organize edilmiştir:
 
 ### 3. Altyapı ve Durum
 - `/api/db-status` - Veritabanı bağlantı durumunu kontrol eder (GET)
+- `/api/utils` - API yardımcı fonksiyonları
 
 ## Ortak Kütüphane
 
-Tüm API'ler `src/shared/api-utils.ts` dosyasındaki ortak işlevleri kullanır:
+Tüm API'ler `src/app/api/utils/api-utils.ts` dosyasındaki ortak işlevleri kullanır:
 
 - `getSelectedTables()` - Seçilen tabloları almak için
 - `handleApiError()` - API hata yanıtlarını standartlaştırmak için
@@ -36,6 +37,7 @@ Tüm API'ler `src/shared/api-utils.ts` dosyasındaki ortak işlevleri kullanır:
 3. **Merkezi Hata Yönetimi**: Tüm hatalar tek bir fonksiyonla yönetiliyor
 4. **Daha İyi Organizasyon**: API'ler yaptıkları işlere göre sınıflandırıldı
 5. **Tek Bir API Seti**: Tüm API'ler tek bir `/api` klasörü altında toplandı, duplicate endpointler kaldırıldı
+6. **Merkezi API Konumu**: Tüm API bileşenleri ve yardımcı araçları tek bir yerde konumlandırıldı
 
 ## API İstek Örnekleri
 
