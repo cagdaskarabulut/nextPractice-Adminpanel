@@ -98,7 +98,7 @@ export default function EasyAdminPage() {
       </header>
       {/* Header için boşluk bırak */}
       <div className="pt-[73px]"></div>
-      <main className="admin-container py-8">
+      <main className="admin-container py-2">
         <AdminPanel />
       </main>
     </div>

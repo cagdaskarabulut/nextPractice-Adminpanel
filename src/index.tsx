@@ -339,7 +339,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </header>
 
-      <div className="admin-container py-6">
+      {/* Header için boşluk bırak */}
+      <div className="admin-container py-2">
         {/* İstediğiniz içeriği burada render edin */}
         <div className="easy-adminpanel-card">
           <h2 className="easy-adminpanel-subtitle">Veritabanı Tabloları</h2>

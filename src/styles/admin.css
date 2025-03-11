@@ -4,8 +4,8 @@
 
 @layer components {
   .admin-container {
-    @apply max-w-[95%] mx-0 px-2 sm:px-3 lg:px-4;
-    margin-left: 1rem;
+    @apply max-w-[98%] mx-0 px-1 sm:px-2 lg:px-3;
+    margin-left: 0.5rem;
   }
   
   .admin-card {
