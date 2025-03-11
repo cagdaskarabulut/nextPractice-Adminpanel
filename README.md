@@ -9,6 +9,7 @@ This package is an admin panel solution that can be easily integrated into your 
 - **Automatic CRUD Interfaces**: Provides listing, adding, editing, and deletion screens for selected tables
 - **Modern UI**: Features a modern interface using Tailwind CSS and ShadCN UI
 - **Secure**: Runs within your own project, giving you full access control
+- **Multi-database Support**: Works with PostgreSQL, MySQL, and MSSQL (SQL Server)
 
 ## Installation
 
@@ -39,9 +40,16 @@ npx easy-adminpanel init --route=/admin --envVar=DATABASE_URL --title="Custom Ad
 
 After installation, follow these steps:
 
-1. Add your database connection information to the `.env` file:
+1. Add your database connection information to the `.env` file (supports PostgreSQL, MySQL, or MSSQL):
    ```
+   # PostgreSQL
    POSTGRES_URL="postgres://user:password@host:port/database"
+   
+   # or MySQL
+   DATABASE_URL="mysql://user:password@host:port/database"
+   
+   # or MSSQL
+   DATABASE_URL="mssql://user:password@host:port/database"
    ```
 
 2. Start your application:
@@ -68,7 +76,11 @@ export default function AdminPage() {
   return (
     <div>
       <h1>My Admin Panel</h1>
-      <AdminPanel />
+      <AdminPanel 
+        connectionString="postgres://user:password@host:port/database"
+        databaseType="postgresql" // Optional: 'postgresql', 'mysql', or 'mssql'
+        title="My Database Admin" // Optional: custom panel title
+      />
     </div>
   );
 }
@@ -77,6 +89,16 @@ export default function AdminPage() {
 This gives you more flexibility to integrate the admin panel into your existing layouts or add custom elements around it.
 
 > **Note**: The AdminPanel component includes all necessary styles internally, so you don't need to import any additional CSS files. The dark blue theme will be automatically applied to ensure a consistent look and feel across all projects.
+
+## Supported Databases
+
+Easy-AdminPanel supports the following database systems:
+
+- **PostgreSQL**: Full support for all features
+- **MySQL**: Full support for all features
+- **MSSQL (SQL Server)**: Full support for all features
+
+The database type is automatically detected from the connection string. If you need to specify it manually, you can use the `databaseType` prop.
 
 ## Integration with Your Next.js Project
 
@@ -94,6 +116,7 @@ module.exports = setupEasyAdminPanel(nextConfig, {
   route: '/admin',   // Optional: URL where admin panel will be accessible
   envVar: 'DATABASE_URL', // Optional: Environment variable for database connection string
   title: 'Admin Panel', // Optional: Panel title
+  databaseType: 'mysql' // Optional: Explicitly set database type ('postgresql', 'mysql', or 'mssql')
 });
 ```
 
