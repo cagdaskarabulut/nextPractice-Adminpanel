@@ -30,11 +30,11 @@ const injectStyles = () => {
     }
 
     .admin-container {
-      max-width: 80rem;
-      margin-left: 2rem;
+      max-width: 95%;
+      margin-left: 1rem;
       margin-right: auto;
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
     
     .admin-card {
@@ -247,8 +247,6 @@ const injectStyles = () => {
       border-radius: 0.5rem;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      width: 100%;
-      max-width: calc(100% - 2rem);
     }
 
     .easy-adminpanel-button {
