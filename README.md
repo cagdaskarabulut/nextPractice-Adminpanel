@@ -90,66 +90,6 @@ This gives you more flexibility to integrate the admin panel into your existing 
 
 > **Note**: The AdminPanel component includes all necessary styles internally, so you don't need to import any additional CSS files. The dark blue theme will be automatically applied to ensure a consistent look and feel across all projects.
 
-## Styling Guide: Preserving the Design in New Projects
-
-Easy-AdminPanel is designed to maintain a consistent look and feel across all projects, regardless of the host project's styling configuration. Here's how it works and how to ensure you always get the beautiful dark blue design:
-
-### How the Styling Works
-
-1. **Self-Contained Styles**: All CSS is embedded directly in the component and injected into the DOM at runtime, with no external dependencies.
-
-2. **CSS Variables and Isolation**: The component uses CSS variables and unique class names to avoid conflicts with your project's styling.
-
-3. **No Configuration Required**: You don't need to add any special configuration to your Tailwind setup or import any CSS files.
-
-### Troubleshooting Style Issues
-
-If you encounter any styling issues when using the component in a new project:
-
-1. **Check Component Wrapping**: Make sure the `<AdminPanel />` component is not wrapped in a container that might override its styles with conflicting rules.
-
-2. **CSS Isolation**: The AdminPanel component is contained within the `.easy-adminpanel` class. Ensure your CSS doesn't have overly aggressive global styles that might override this.
-
-3. **z-index Issues**: If elements appear behind other content, check for z-index conflicts in your main application.
-
-### For Projects Without Tailwind
-
-Even if your project doesn't use Tailwind CSS, the AdminPanel component will work perfectly:
-
-```jsx
-// Works in any Next.js project, with or without Tailwind
-import { AdminPanel } from 'easy-adminpanel';
-
-export default function AdminPage() {
-  return <AdminPanel />; // All styles are included within the component
-}
-```
-
-### Custom Styling (Advanced)
-
-If you need to customize the appearance of the admin panel:
-
-1. **Override CSS Variables**: You can override the CSS variables in your global styles:
-
-```css
-:root {
-  --admin-dark-blue-900: #0D1F36; /* Custom primary color */
-  --admin-blue-500: #3378FF; /* Custom accent color */
-}
-```
-
-2. **Target Specific Classes**: For more detailed customization, you can target the component's classes:
-
-```css
-.easy-adminpanel-header {
-  /* Your custom header styling */
-}
-
-.easy-adminpanel-button-primary {
-  /* Your custom button styling */
-}
-```
-
 ## Supported Databases
 
 Easy-AdminPanel supports the following database systems:
