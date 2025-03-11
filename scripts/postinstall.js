@@ -86,18 +86,8 @@ try {
   }
 
   function injectStyles() {
-    const projectRoot = process.env.INIT_CWD || process.cwd();
-    const packageRoot = path.join(__dirname, "..");
-
-    // Stil dosyalarını kopyala
-    const sourceStyles = path.join(packageRoot, "src", "styles", "admin.css");
-    const targetStyles = path.join(projectRoot, "src", "styles", "admin.css");
-
-    if (fs.existsSync(sourceStyles)) {
-      copyFile(sourceStyles, targetStyles);
-    } else {
-      console.error("× admin.css dosyası pakette bulunamadı");
-    }
+    // CSS dosyaları artık index.tsx içinde doğrudan tanımlandığı için
+    // admin.css dosyasını kopyalamaya gerek yok
 
     // Tailwind config'i güncelle
     updateTailwindConfig();

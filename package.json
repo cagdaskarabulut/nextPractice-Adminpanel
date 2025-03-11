@@ -7,7 +7,6 @@
   "files": [
     "dist",
     "templates",
-    "src/styles",
     "scripts"
   ],
   "bin": {
