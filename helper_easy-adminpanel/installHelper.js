@@ -74,22 +74,50 @@ const createAdminPages = () => {
   );
 
   // Admin sayfaları için varsayılan içerikler
-  const defaultLayoutContent = `
-export default function AdminLayout({ children }) {
+  const defaultLayoutContent = `import React from "react";
+import ClientStyleInjector from "./ClientStyleInjector";
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="easy-adminpanel">
-      {children}
+    <div className="min-h-screen bg-white text-gray-800">
+      <ClientStyleInjector />
+      <div className="container mx-auto px-4 py-8">{children}</div>
     </div>
   );
-}
-  `.trim();
+}`.trim();
 
   const defaultPageContent = `"use client";
 
-import { AdminPanel } from '@/styles/adminpanel';
+import { AdminPanel } from "@/styles/adminpanel";
 
-export default function AdminPage() {
-  return <AdminPanel />;
+export default function EasyAdminPage() {
+  const title = process.env.EASY_ADMIN_TITLE || "Easy Admin Panel";
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">{title}</h1>
+      <AdminPanel />
+    </div>
+  );
+}`.trim();
+
+  const defaultClientStyleInjectorContent = `"use client";
+
+import { useEffect } from "react";
+import { injectStylesheet } from "../../styles/adminpanel";
+
+export default function ClientStyleInjector() {
+  useEffect(() => {
+    // Stilleri enjekte et
+    injectStylesheet();
+  }, []);
+
+  // Hiçbir şey render etmeyen bir bileşen
+  return null;
 }`.trim();
 
   // Admin sayfalarını oluştur
@@ -101,6 +129,13 @@ export default function AdminPage() {
     "layout.tsx"
   );
   const pagePath = path.join(projectRoot, "src", "app", "admin", "page.tsx");
+  const clientStyleInjectorPath = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "admin",
+    "ClientStyleInjector.tsx"
+  );
 
   // Önce templates klasöründen kopyalamayı dene
   let templatesFound = false;
@@ -126,27 +161,9 @@ export default function AdminPage() {
           `${colors.blue}ℹ ${colors.reset}Templates dizini bulundu: ${templateDir}`
         );
 
-        // Layout dosyasını kopyala
-        const layoutTemplatePath = path.join(templateDir, "layout.tsx");
-        if (fs.existsSync(layoutTemplatePath)) {
-          fs.copyFileSync(layoutTemplatePath, layoutPath);
-          console.log(
-            `${colors.green}✓ ${colors.reset}Layout dosyası kopyalandı: ${layoutPath}`
-          );
-          templatesFound = true;
-        }
-
-        // Page dosyasını kopyala
-        const pageTemplatePath = path.join(templateDir, "page.tsx");
-        if (fs.existsSync(pageTemplatePath)) {
-          fs.copyFileSync(pageTemplatePath, pagePath);
-          console.log(
-            `${colors.green}✓ ${colors.reset}Page dosyası kopyalandı: ${pagePath}`
-          );
-          templatesFound = true;
-        }
-
-        if (templatesFound) break;
+        // Template dosyaları var ancak biz yine de istenilen custom dosyaları kullanacağız
+        templatesFound = true;
+        break;
       }
     }
   } catch (error) {
@@ -155,28 +172,28 @@ export default function AdminPage() {
     );
   }
 
-  // Eğer templates bulunamadıysa varsayılan dosyaları oluştur
-  if (!templatesFound) {
-    console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Template dosyaları bulunamadı, varsayılan dosyalar oluşturuluyor...`
-    );
+  // Template dosyalarının durumuna bakmaksızın istenilen özel içerikle dosyaları oluşturuyoruz
+  console.log(
+    `${colors.green}✓ ${colors.reset}Özel admin sayfaları oluşturuluyor...`
+  );
 
-    // Layout dosyasını oluştur
-    if (!fs.existsSync(layoutPath)) {
-      fs.writeFileSync(layoutPath, defaultLayoutContent);
-      console.log(
-        `${colors.green}✓ ${colors.reset}Varsayılan layout.tsx oluşturuldu: ${layoutPath}`
-      );
-    }
+  // Layout dosyasını oluştur
+  fs.writeFileSync(layoutPath, defaultLayoutContent);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Layout.tsx oluşturuldu: ${layoutPath}`
+  );
 
-    // Page dosyasını oluştur
-    if (!fs.existsSync(pagePath)) {
-      fs.writeFileSync(pagePath, defaultPageContent);
-      console.log(
-        `${colors.green}✓ ${colors.reset}Varsayılan page.tsx oluşturuldu: ${pagePath}`
-      );
-    }
-  }
+  // Page dosyasını oluştur
+  fs.writeFileSync(pagePath, defaultPageContent);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Page.tsx oluşturuldu: ${pagePath}`
+  );
+
+  // ClientStyleInjector dosyasını oluştur
+  fs.writeFileSync(clientStyleInjectorPath, defaultClientStyleInjectorContent);
+  console.log(
+    `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx oluşturuldu: ${clientStyleInjectorPath}`
+  );
 };
 
 // Dosyaların kopyalanması
@@ -248,79 +265,6 @@ const checkDocumentation = () => {
   }
 };
 
-// Ana layout.tsx dosyasını düzenle
-const updateMainLayout = () => {
-  console.log(
-    `${colors.yellow}» ${colors.reset}Ana layout.tsx dosyası kontrol ediliyor...`
-  );
-
-  const mainLayoutPath = path.join(projectRoot, "src", "app", "layout.tsx");
-
-  if (fs.existsSync(mainLayoutPath)) {
-    try {
-      let layoutContent = fs.readFileSync(mainLayoutPath, "utf8");
-
-      // "use client" direktifi ve imports önceden eklenmemiş mi diye kontrol et
-      if (
-        !layoutContent.includes('"use client"') &&
-        !layoutContent.includes("'use client'")
-      ) {
-        // "use client" direktifi ve useEffect import'u ekle
-        const importLine = 'import { useEffect } from "react";';
-
-        // Dosyanın başına ekle
-        layoutContent = `"use client";\n${importLine}\n\n${layoutContent}`;
-
-        fs.writeFileSync(mainLayoutPath, layoutContent);
-        console.log(
-          `${colors.green}✓ ${colors.reset}Ana layout.tsx dosyası "use client" ve useEffect import'u ile güncellendi.`
-        );
-      } else {
-        console.log(
-          `${colors.blue}ℹ ${colors.reset}Ana layout.tsx dosyası zaten "use client" içeriyor.`
-        );
-
-        // useEffect import'u var mı kontrol et
-        if (
-          !layoutContent.includes("import { useEffect }") &&
-          !layoutContent.includes("import useEffect")
-        ) {
-          // useEffect import'u ekle ama "use client" direktifini tekrarlama
-          const lines = layoutContent.split("\n");
-          const useClientIndex = lines.findIndex((line) =>
-            line.includes("use client")
-          );
-
-          if (useClientIndex !== -1) {
-            lines.splice(
-              useClientIndex + 1,
-              0,
-              'import { useEffect } from "react";'
-            );
-            layoutContent = lines.join("\n");
-            fs.writeFileSync(mainLayoutPath, layoutContent);
-            console.log(
-              `${colors.green}✓ ${colors.reset}Ana layout.tsx dosyasına useEffect import'u eklendi.`
-            );
-          }
-        } else {
-          console.log(
-            `${colors.blue}ℹ ${colors.reset}Ana layout.tsx dosyası zaten useEffect import'u içeriyor.`
-          );
-        }
-      }
-    } catch (error) {
-      console.error(
-        `${colors.red}✗ ${colors.reset}Ana layout.tsx düzenlenirken hata: ${error.message}`
-      );
-    }
-  } else {
-    console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Ana layout.tsx dosyası bulunamadı. Projenizde Next.js app router yapısı olduğundan emin olun.`
-    );
-  }
-};
-
 // Lucide React bağımlılık kontrolü
 const checkDependencies = () => {
   try {
@@ -354,7 +298,6 @@ try {
   createDirectories();
   copyFiles();
   createAdminPages(); // Admin sayfalarını oluştur
-  updateMainLayout(); // Ana layout dosyasını güncelle
   checkDependencies();
   checkDocumentation();
 
