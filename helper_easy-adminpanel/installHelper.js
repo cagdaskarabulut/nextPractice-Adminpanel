@@ -24,6 +24,31 @@ const projectRoot = process.cwd();
 // Helper klasörünün olduğu yer
 const helperDir = path.join(__dirname);
 
+// Eski easy-adminpanel klasörünü temizle (eğer varsa)
+const cleanupOldFiles = () => {
+  const easyAdminPanelDir = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "easy-adminpanel"
+  );
+  if (fs.existsSync(easyAdminPanelDir)) {
+    console.log(
+      `${colors.yellow}⚠️ ${colors.reset}Eski easy-adminpanel klasörü bulundu. Kaldırılıyor...`
+    );
+    try {
+      fs.rmSync(easyAdminPanelDir, { recursive: true, force: true });
+      console.log(
+        `${colors.green}✓ ${colors.reset}Eski klasör başarıyla kaldırıldı.`
+      );
+    } catch (error) {
+      console.error(
+        `${colors.red}✗ ${colors.reset}Eski klasör kaldırılamadı: ${error.message}`
+      );
+    }
+  }
+};
+
 // Hedef dizinlerin oluşturulması
 const createDirectories = () => {
   const dirs = [
@@ -31,6 +56,7 @@ const createDirectories = () => {
     path.join(projectRoot, "src", "components", "utils"),
     path.join(projectRoot, "src", "components", "dialogs"),
     path.join(projectRoot, "src", "styles"),
+    path.join(projectRoot, "src", "app", "admin"), // easy-adminpanel yerine doğrudan admin klasörü
   ];
 
   dirs.forEach((dir) => {
@@ -91,6 +117,40 @@ const copyFiles = () => {
   const stylesDest = path.join(projectRoot, "src", "styles", "adminpanel.tsx");
   fs.copyFileSync(stylesFile, stylesDest);
   console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${stylesDest}`);
+
+  // Admin sayfalarını kopyala - easy-adminpanel yerine admin klasörüne
+  try {
+    // Eğer templates klasöründe ilgili dosyalar varsa onları kullan
+    const templatesDir = path.join(
+      path.dirname(path.dirname(helperDir)),
+      "templates"
+    );
+
+    // layout.tsx ve page.tsx dosyaları için
+    if (fs.existsSync(path.join(templatesDir, "layout.tsx"))) {
+      fs.copyFileSync(
+        path.join(templatesDir, "layout.tsx"),
+        path.join(projectRoot, "src", "app", "admin", "layout.tsx")
+      );
+      console.log(
+        `${colors.green}✓ ${colors.reset}Kopyalandı: src/app/admin/layout.tsx`
+      );
+    }
+
+    if (fs.existsSync(path.join(templatesDir, "page.tsx"))) {
+      fs.copyFileSync(
+        path.join(templatesDir, "page.tsx"),
+        path.join(projectRoot, "src", "app", "admin", "page.tsx")
+      );
+      console.log(
+        `${colors.green}✓ ${colors.reset}Kopyalandı: src/app/admin/page.tsx`
+      );
+    }
+  } catch (error) {
+    console.error(
+      `${colors.red}✗ ${colors.reset}Admin sayfaları kopyalanırken hata oluştu: ${error.message}`
+    );
+  }
 };
 
 // Belge kontrolü
@@ -139,6 +199,7 @@ const checkDependencies = () => {
 
 // Ana işlemleri çalıştır
 try {
+  cleanupOldFiles();
   createDirectories();
   copyFiles();
   checkDependencies();
@@ -148,7 +209,7 @@ try {
     `\n${colors.bright}${colors.green}Entegrasyon tamamlandı!${colors.reset} Easy-AdminPanel bileşenleri başarıyla projenize eklendi.\n`
   );
   console.log(
-    `Daha fazla bilgi için: ${colors.bright}${colors.blue}https://github.com/yourusername/easy-adminpanel${colors.reset}\n`
+    `Admin paneline şu adresten erişebilirsiniz: ${colors.bright}${colors.blue}http://localhost:3000/admin${colors.reset}\n`
   );
 } catch (error) {
   console.error(

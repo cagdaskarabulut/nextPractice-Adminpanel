@@ -18,6 +18,14 @@ Bu paket, Next.js projelerinde kullanılmak üzere tasarlanmıştır. Ek bağım
 npm install lucide-react
 ```
 
+Ardından, kurulum yardımcısını çalıştırın:
+
+```bash
+npx easy-adminpanel-setup
+```
+
+Bu komut, gerekli tüm bileşenleri ve stil dosyalarını projenize ekleyecek ve `/admin` yolunda bir admin paneli oluşturacaktır.
+
 ### 2. Stil Dosyalarının Entegrasyonu
 
 Easy-AdminPanel, özel bir CSS stilini kullanır. Bu dosyaları projenize dahil etmek için aşağıdaki adımları izleyin:
@@ -94,6 +102,8 @@ export default function AdminPage() {
   );
 }
 ```
+
+Panel şu adreste erişilebilir olacaktır: `http://localhost:3000/admin`
 
 ## Sorun Giderme
 
