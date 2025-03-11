@@ -248,6 +248,79 @@ const checkDocumentation = () => {
   }
 };
 
+// Ana layout.tsx dosyasını düzenle
+const updateMainLayout = () => {
+  console.log(
+    `${colors.yellow}» ${colors.reset}Ana layout.tsx dosyası kontrol ediliyor...`
+  );
+
+  const mainLayoutPath = path.join(projectRoot, "src", "app", "layout.tsx");
+
+  if (fs.existsSync(mainLayoutPath)) {
+    try {
+      let layoutContent = fs.readFileSync(mainLayoutPath, "utf8");
+
+      // "use client" direktifi ve imports önceden eklenmemiş mi diye kontrol et
+      if (
+        !layoutContent.includes('"use client"') &&
+        !layoutContent.includes("'use client'")
+      ) {
+        // "use client" direktifi ve useEffect import'u ekle
+        const importLine = 'import { useEffect } from "react";';
+
+        // Dosyanın başına ekle
+        layoutContent = `"use client";\n${importLine}\n\n${layoutContent}`;
+
+        fs.writeFileSync(mainLayoutPath, layoutContent);
+        console.log(
+          `${colors.green}✓ ${colors.reset}Ana layout.tsx dosyası "use client" ve useEffect import'u ile güncellendi.`
+        );
+      } else {
+        console.log(
+          `${colors.blue}ℹ ${colors.reset}Ana layout.tsx dosyası zaten "use client" içeriyor.`
+        );
+
+        // useEffect import'u var mı kontrol et
+        if (
+          !layoutContent.includes("import { useEffect }") &&
+          !layoutContent.includes("import useEffect")
+        ) {
+          // useEffect import'u ekle ama "use client" direktifini tekrarlama
+          const lines = layoutContent.split("\n");
+          const useClientIndex = lines.findIndex((line) =>
+            line.includes("use client")
+          );
+
+          if (useClientIndex !== -1) {
+            lines.splice(
+              useClientIndex + 1,
+              0,
+              'import { useEffect } from "react";'
+            );
+            layoutContent = lines.join("\n");
+            fs.writeFileSync(mainLayoutPath, layoutContent);
+            console.log(
+              `${colors.green}✓ ${colors.reset}Ana layout.tsx dosyasına useEffect import'u eklendi.`
+            );
+          }
+        } else {
+          console.log(
+            `${colors.blue}ℹ ${colors.reset}Ana layout.tsx dosyası zaten useEffect import'u içeriyor.`
+          );
+        }
+      }
+    } catch (error) {
+      console.error(
+        `${colors.red}✗ ${colors.reset}Ana layout.tsx düzenlenirken hata: ${error.message}`
+      );
+    }
+  } else {
+    console.log(
+      `${colors.yellow}⚠️ ${colors.reset}Ana layout.tsx dosyası bulunamadı. Projenizde Next.js app router yapısı olduğundan emin olun.`
+    );
+  }
+};
+
 // Lucide React bağımlılık kontrolü
 const checkDependencies = () => {
   try {
@@ -281,6 +354,7 @@ try {
   createDirectories();
   copyFiles();
   createAdminPages(); // Admin sayfalarını oluştur
+  updateMainLayout(); // Ana layout dosyasını güncelle
   checkDependencies();
   checkDocumentation();
 
