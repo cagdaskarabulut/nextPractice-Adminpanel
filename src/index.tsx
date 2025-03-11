@@ -31,7 +31,7 @@ const injectStyles = () => {
 
     .admin-container {
       max-width: 95%;
-      margin-left: 1rem;
+      margin-left: auto;
       margin-right: auto;
       padding-left: 0.5rem;
       padding-right: 0.5rem;
@@ -339,8 +339,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </header>
 
-      {/* Header için boşluk bırak */}
-      <div className="admin-container py-2">
+      <div className="admin-container py-6">
         {/* İstediğiniz içeriği burada render edin */}
         <div className="easy-adminpanel-card">
           <h2 className="easy-adminpanel-subtitle">Veritabanı Tabloları</h2>
