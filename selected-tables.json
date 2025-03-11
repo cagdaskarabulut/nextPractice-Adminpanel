@@ -5,6 +5,7 @@
     "test",
     "topic",
     "yellcord_notifications",
+    "yellcord_user_roles",
     "yellcord_users"
   ]
 }
