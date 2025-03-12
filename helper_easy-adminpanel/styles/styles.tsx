@@ -331,10 +331,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   databaseType,
   title = "Easy-AdminPanel",
 }) => {
+  // State tanımlıyoruz - tablolar listesi için
+  const [tables, setTables] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Sayfa yüklendiğinde tabloları getir
   useEffect(() => {
     // Component monte edildiğinde stilleri enjekte et
     injectStylesheet();
+
+    // Tabloları yükle
+    loadTables();
   }, []);
+
+  // Tabloları getiren fonksiyon
+  const loadTables = () => {
+    setLoading(true);
+    fetch("/api/tables")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.tables && Array.isArray(data.tables)) {
+          setTables(data.tables);
+        } else {
+          setTables([]);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Tablolar yüklenirken hata oluştu:", error);
+        setTables([]);
+        setLoading(false);
+      });
+  };
 
   // Tabloları Yönet butonuna tıklanınca yapılacak işlem
   const handleManageTables = () => {
@@ -444,8 +472,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   })
                     .then(() => {
                       document.body.removeChild(dialogContainer);
-                      // Sayfayı yenile
-                      window.location.reload();
+                      // Tabloları yeniden yükle - sayfa yenilemek yerine
+                      loadTables();
                     })
                     .catch((error) => {
                       console.error("Error saving tables:", error);
@@ -458,6 +486,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       .catch((error) => {
         console.error("Error fetching tables:", error);
       });
+  };
+
+  // Bir tablonun kayıtlarını listeler
+  const handleListTable = (tableName: string) => {
+    window.location.href = `/easy-adminpanel/records?table=${tableName}`;
+  };
+
+  // Tabloya yeni kayıt ekle
+  const handleAddRecord = (tableName: string) => {
+    window.location.href = `/easy-adminpanel/add-record?table=${tableName}`;
   };
 
   return (
@@ -478,15 +516,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </header>
 
       <div className="admin-container py-6">
-        {/* İstediğiniz içeriği burada render edin */}
-        <div className="easy-adminpanel-card">
+        <div className="mb-6 flex justify-between items-center">
           <h2 className="easy-adminpanel-subtitle">Veritabanı Tabloları</h2>
-          <p className="text-admin-gray-400 mb-4">
-            {databaseType
-              ? `${databaseType.toUpperCase()} veritabanınızdaki tablolar yönetilmeye hazır.`
-              : "Veritabanınızdaki tablolar yönetilmeye hazır."}
-          </p>
-
           <button
             className="easy-adminpanel-button easy-adminpanel-button-primary"
             onClick={handleManageTables}
@@ -494,6 +525,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             Tabloları Yönet
           </button>
         </div>
+
+        {loading ? (
+          <div className="easy-adminpanel-card p-8 flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
+          </div>
+        ) : tables.length === 0 ? (
+          <div className="easy-adminpanel-card">
+            <p className="text-admin-gray-400 mb-4">
+              Henüz hiç tablo seçilmemiş. Veri yönetimi için "Tabloları Yönet"
+              butonunu kullanarak tablolarınızı seçin.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {tables.map((table: any) => (
+              <div
+                key={table.name}
+                className="easy-adminpanel-card hover:shadow-lg transition-shadow overflow-hidden"
+              >
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  {table.displayName || table.name}
+                </h3>
+                <div className="flex space-x-2 mt-4">
+                  <button
+                    className="flex-1 easy-adminpanel-button easy-adminpanel-button-primary"
+                    onClick={() => handleListTable(table.name)}
+                  >
+                    Listele
+                  </button>
+                  <button
+                    className="flex-1 easy-adminpanel-button bg-green-600 hover:bg-green-500 text-white"
+                    onClick={() => handleAddRecord(table.name)}
+                  >
+                    Ekle
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

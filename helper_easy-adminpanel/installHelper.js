@@ -593,6 +593,278 @@ export default function EasyAdminPage() {
   return <AdminPanel title={title} />;
 }`.trim();
 
+  const recordsPageContent = `"use client";
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+export default function RecordsPage() {
+  const searchParams = useSearchParams();
+  const table = searchParams.get('table');
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [columns, setColumns] = useState([]);
+
+  useEffect(() => {
+    if (!table) return;
+    
+    // Kayıtları getir
+    setLoading(true);
+    fetch(\`/api/resources/\${table}\`)
+      .then(res => res.json())
+      .then(data => {
+        setRecords(data);
+        if (data.length > 0) {
+          // Tablo kolonlarını dinamik olarak belirle
+          setColumns(Object.keys(data[0]));
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Kayıtlar getirilirken hata oluştu:", error);
+        setLoading(false);
+      });
+  }, [table]);
+
+  const handleBack = () => {
+    window.location.href = '/easy-adminpanel';
+  };
+
+  const handleEdit = (id) => {
+    window.location.href = \`/easy-adminpanel/edit-record?table=\${table}&id=\${id}\`;
+  };
+
+  const handleDelete = (id) => {
+    if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+      fetch(\`/api/resources/\${table}?id=\${id}\`, {
+        method: 'DELETE',
+      })
+        .then(res => {
+          if (res.ok) {
+            // Başarıyla silindi, listeyi güncelle
+            setRecords(records.filter(record => record.id !== id));
+          }
+        })
+        .catch(error => {
+          console.error("Kayıt silinirken hata oluştu:", error);
+        });
+    }
+  };
+
+  return (
+    <div className="admin-container py-6">
+      <div className="mb-6 flex items-center">
+        <button 
+          className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
+          onClick={handleBack}
+        >
+          ← Geri
+        </button>
+        <h1 className="easy-adminpanel-title">
+          {table} Kayıtları
+        </h1>
+        <div className="flex-grow"></div>
+        <button 
+          className="easy-adminpanel-button easy-adminpanel-button-primary"
+          onClick={() => window.location.href = \`/easy-adminpanel/add-record?table=\${table}\`}
+        >
+          + Yeni Ekle
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="easy-adminpanel-card p-8 flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
+        </div>
+      ) : records.length === 0 ? (
+        <div className="easy-adminpanel-card">
+          <p className="text-admin-gray-400 mb-4">
+            Henüz hiç kayıt bulunmuyor. Yeni kayıt eklemek için "Yeni Ekle" butonunu kullanabilirsiniz.
+          </p>
+        </div>
+      ) : (
+        <div className="easy-adminpanel-card overflow-x-auto">
+          <table className="admin-table w-full">
+            <thead>
+              <tr>
+                {columns.map(column => (
+                  <th key={column}>{column}</th>
+                ))}
+                <th className="text-right">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map(record => (
+                <tr key={record.id}>
+                  {columns.map(column => (
+                    <td key={column+record.id}>{String(record[column])}</td>
+                  ))}
+                  <td className="text-right">
+                    <button 
+                      className="easy-adminpanel-button easy-adminpanel-button-secondary mr-2"
+                      onClick={() => handleEdit(record.id)}
+                    >
+                      Düzenle
+                    </button>
+                    <button 
+                      className="easy-adminpanel-button bg-red-600 hover:bg-red-500 text-white"
+                      onClick={() => handleDelete(record.id)}
+                    >
+                      Sil
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}`.trim();
+
+  const addRecordPageContent = `"use client";
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+export default function AddRecordPage() {
+  const searchParams = useSearchParams();
+  const table = searchParams.get('table');
+  const [loading, setLoading] = useState(false);
+  const [record, setRecord] = useState({});
+  const [tableSample, setTableSample] = useState(null);
+  const [columns, setColumns] = useState([]);
+
+  useEffect(() => {
+    if (!table) return;
+    
+    // Örnek bir kayıt getirerek tablo yapısını anla
+    fetch(\`/api/resources/\${table}\`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length > 0) {
+          setTableSample(data[0]);
+          // ID dışındaki tüm kolonları al
+          const cols = Object.keys(data[0]).filter(key => key !== 'id');
+          setColumns(cols);
+          
+          // Boş bir kayıt oluştur
+          const emptyRecord = {};
+          cols.forEach(col => {
+            emptyRecord[col] = '';
+          });
+          setRecord(emptyRecord);
+        }
+      })
+      .catch(error => {
+        console.error("Tablo yapısı belirlenirken hata oluştu:", error);
+      });
+  }, [table]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setRecord({
+      ...record,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    fetch(\`/api/resources/\${table}\`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(record)
+    })
+      .then(res => {
+        if (res.ok) {
+          // Başarılı
+          window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
+        } else {
+          setLoading(false);
+          alert('Kayıt eklenirken bir hata oluştu!');
+        }
+      })
+      .catch(error => {
+        console.error("Kayıt eklenirken hata oluştu:", error);
+        setLoading(false);
+        alert('Kayıt eklenirken bir hata oluştu!');
+      });
+  };
+
+  const handleBack = () => {
+    window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
+  };
+
+  return (
+    <div className="admin-container py-6">
+      <div className="mb-6 flex items-center">
+        <button 
+          className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
+          onClick={handleBack}
+        >
+          ← Geri
+        </button>
+        <h1 className="easy-adminpanel-title">
+          {table} - Yeni Kayıt Ekle
+        </h1>
+      </div>
+
+      <div className="easy-adminpanel-card">
+        {loading ? (
+          <div className="p-8 flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
+          </div>
+        ) : columns.length === 0 ? (
+          <p className="text-admin-gray-400">
+            Tablo yapısı belirlenemedi. Lütfen tabloda en az bir kayıt olduğundan emin olun.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {columns.map(column => (
+              <div key={column} className="space-y-1">
+                <label className="block text-sm">
+                  {column}
+                </label>
+                <input
+                  type="text"
+                  name={column}
+                  value={record[column] || ''}
+                  onChange={handleInputChange}
+                  className="admin-input w-full"
+                  required
+                />
+              </div>
+            ))}
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <button 
+                type="button"
+                className="easy-adminpanel-button easy-adminpanel-button-secondary"
+                onClick={handleBack}
+              >
+                İptal
+              </button>
+              <button 
+                type="submit"
+                className="easy-adminpanel-button easy-adminpanel-button-primary"
+                disabled={loading}
+              >
+                Kaydet
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}`.trim();
+
   const defaultClientStyleInjectorContent = `"use client";
 
 import { useEffect } from "react";
@@ -630,6 +902,34 @@ export default function ClientStyleInjector() {
     "easy-adminpanel",
     "ClientStyleInjector.tsx"
   );
+
+  // Records ve add-record sayfaları için klasörler
+  const recordsDirPath = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "easy-adminpanel",
+    "records"
+  );
+  const addRecordDirPath = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "easy-adminpanel",
+    "add-record"
+  );
+
+  // Klasörleri oluştur
+  if (!fs.existsSync(recordsDirPath)) {
+    fs.mkdirSync(recordsDirPath, { recursive: true });
+  }
+  if (!fs.existsSync(addRecordDirPath)) {
+    fs.mkdirSync(addRecordDirPath, { recursive: true });
+  }
+
+  // Records ve add-record sayfa dosyaları
+  const recordsPagePath = path.join(recordsDirPath, "page.tsx");
+  const addRecordPagePath = path.join(addRecordDirPath, "page.tsx");
 
   // Önce templates klasöründen kopyalamayı dene
   let templatesFound = false;
@@ -687,6 +987,18 @@ export default function ClientStyleInjector() {
   fs.writeFileSync(clientStyleInjectorPath, defaultClientStyleInjectorContent);
   console.log(
     `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx oluşturuldu: ${clientStyleInjectorPath}`
+  );
+
+  // Records sayfasını oluştur
+  fs.writeFileSync(recordsPagePath, recordsPageContent);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Records/page.tsx oluşturuldu: ${recordsPagePath}`
+  );
+
+  // Add-record sayfasını oluştur
+  fs.writeFileSync(addRecordPagePath, addRecordPageContent);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Add-record/page.tsx oluşturuldu: ${addRecordPagePath}`
   );
 };
 
