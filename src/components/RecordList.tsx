@@ -35,30 +35,7 @@ const RecordList: React.FC<RecordListProps> = ({
   onCancelDelete,
 }) => {
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-slate-100 min-h-screen p-6 rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <button
-            className="flex items-center gap-1 px-3 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-200 shadow-sm mr-4 border border-slate-300"
-            onClick={onBackToTables}
-          >
-            <ChevronLeft size={18} />
-            <span>Geri</span>
-          </button>
-          <h2 className="text-2xl font-bold text-slate-800">
-            {tables.find((t) => t.name === selectedTable)?.displayName ||
-              selectedTable}
-          </h2>
-        </div>
-        <button
-          className="flex items-center gap-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md transition-all duration-200"
-          onClick={() => onAddRecord(selectedTable)}
-        >
-          <Plus size={18} />
-          <span>Yeni Ekle</span>
-        </button>
-      </div>
-
+    <div className="easy-adminpanel-content bg-admin-dark-blue-800 min-h-screen p-6 rounded-lg">
       {/* Silme Onay Diyaloğu */}
       {deleteConfirmOpen && (
         <DeleteConfirmDialog
@@ -67,20 +44,34 @@ const RecordList: React.FC<RecordListProps> = ({
         />
       )}
 
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">
+          {tables.find((t) => t.name === selectedTable)?.displayName ||
+            selectedTable}
+        </h1>
+        <button
+          className="admin-button-primary flex items-center gap-2"
+          onClick={() => onAddRecord(selectedTable)}
+        >
+          <Plus size={18} />
+          <span>Yeni Kayıt</span>
+        </button>
+      </div>
+
       {recordLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
         </div>
       ) : tableRecords.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl shadow-md border border-slate-200 flex flex-col items-center">
-          <div className="mb-4 p-3 bg-slate-100 rounded-full">
-            <Filter className="w-8 h-8 text-slate-400" />
+        <div className="bg-admin-dark-blue-700 p-8 rounded-xl shadow-md border border-admin-dark-blue-600 flex flex-col items-center">
+          <div className="mb-4 p-3 bg-admin-dark-blue-600 rounded-full">
+            <Filter className="w-8 h-8 text-admin-gray-400" />
           </div>
-          <p className="text-slate-600 text-center">
+          <p className="text-admin-gray-300 text-center">
             Bu tabloda henüz kayıt bulunmuyor.
           </p>
           <button
-            className="mt-4 flex items-center gap-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md"
+            className="mt-4 admin-button-primary flex items-center gap-2"
             onClick={() => onAddRecord(selectedTable)}
           >
             <Plus size={16} />
@@ -88,38 +79,38 @@ const RecordList: React.FC<RecordListProps> = ({
           </button>
         </div>
       ) : (
-        <div className="overflow-hidden bg-white shadow-md rounded-xl border border-slate-200">
+        <div className="overflow-hidden bg-admin-dark-blue-700 shadow-md rounded-xl border border-admin-dark-blue-600">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
+            <table className="min-w-full divide-y divide-admin-dark-blue-600">
+              <thead className="bg-admin-dark-blue-800">
                 <tr>
                   {tableColumns.map((column) => (
                     <th
                       key={column.name}
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-admin-gray-400 uppercase tracking-wider"
                     >
                       {column.name}
                     </th>
                   ))}
                   <th
                     scope="col"
-                    className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-right text-xs font-medium text-admin-gray-400 uppercase tracking-wider"
                   >
-                    İşlemler
+                    İŞLEMLER
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
+              <tbody className="bg-admin-dark-blue-700 divide-y divide-admin-dark-blue-600">
                 {tableRecords.map((record, index) => (
                   <tr
                     key={index}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-admin-dark-blue-600 transition-colors"
                   >
                     {tableColumns.map((column) => (
                       <td
                         key={column.name}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-slate-700"
+                        className="px-6 py-4 whitespace-nowrap text-sm text-admin-gray-300"
                       >
                         {String(record[column.name] || "-")}
                       </td>
@@ -127,14 +118,14 @@ const RecordList: React.FC<RecordListProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
-                          className="inline-flex items-center gap-1 p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                          className="inline-flex items-center gap-1 p-1.5 bg-admin-blue-900 text-admin-blue-300 rounded hover:bg-admin-blue-800"
                           onClick={() => onEditRecord(record.id)}
                           title="Düzenle"
                         >
                           <Pencil size={16} />
                         </button>
                         <button
-                          className="inline-flex items-center gap-1 p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                          className="inline-flex items-center gap-1 p-1.5 bg-admin-red-900 text-admin-red-300 rounded hover:bg-admin-red-800"
                           onClick={() => onDeleteConfirm(record.id)}
                           title="Sil"
                         >
