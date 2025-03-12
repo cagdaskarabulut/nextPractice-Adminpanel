@@ -26,18 +26,15 @@ const helperDir = path.join(__dirname);
 
 // Eski easy-adminpanel klasörünü temizle (eğer varsa)
 const cleanupOldFiles = () => {
-  const easyAdminPanelDir = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel"
-  );
-  if (fs.existsSync(easyAdminPanelDir)) {
+  // admin klasörünü artık silmiyoruz, çünkü easy-adminpanel kullanacağız
+  // Eski admin klasörünü kontrol et ve sil
+  const adminDir = path.join(projectRoot, "src", "app", "admin");
+  if (fs.existsSync(adminDir)) {
     console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Eski easy-adminpanel klasörü bulundu. Kaldırılıyor...`
+      `${colors.yellow}⚠️ ${colors.reset}Eski admin klasörü bulundu. Kaldırılıyor...`
     );
     try {
-      fs.rmSync(easyAdminPanelDir, { recursive: true, force: true });
+      fs.rmSync(adminDir, { recursive: true, force: true });
       console.log(
         `${colors.green}✓ ${colors.reset}Eski klasör başarıyla kaldırıldı.`
       );
@@ -56,7 +53,7 @@ const createDirectories = () => {
     path.join(projectRoot, "src", "components", "utils"),
     path.join(projectRoot, "src", "components", "dialogs"),
     path.join(projectRoot, "src", "styles"),
-    path.join(projectRoot, "src", "app", "admin"), // easy-adminpanel yerine doğrudan admin klasörü
+    path.join(projectRoot, "src", "app", "easy-adminpanel"), // admin yerine easy-adminpanel klasörü
     // API dizinleri
     path.join(projectRoot, "src", "app", "api", "tables"),
     path.join(projectRoot, "src", "app", "api", "all-tables"),
@@ -566,10 +563,10 @@ export async function DELETE(
 // Admin sayfalarını oluştur
 const createAdminPages = () => {
   console.log(
-    `${colors.yellow}» ${colors.reset}Admin sayfaları oluşturuluyor...`
+    `${colors.yellow}» ${colors.reset}Easy-AdminPanel sayfaları oluşturuluyor...`
   );
 
-  // Admin sayfaları için varsayılan içerikler
+  // Admin sayfaları için varsayılan içerikler - full screen temayı kullanacak şekilde güncellendi
   const defaultLayoutContent = `import React from "react";
 import ClientStyleInjector from "./ClientStyleInjector";
 
@@ -579,9 +576,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white text-gray-800">
+    <div className="min-h-screen easy-adminpanel">
       <ClientStyleInjector />
-      <div className="container mx-auto px-4 py-8">{children}</div>
+      {children}
     </div>
   );
 }`.trim();
@@ -593,12 +590,7 @@ import { AdminPanel } from "@/styles/adminpanel";
 export default function EasyAdminPage() {
   const title = process.env.EASY_ADMIN_TITLE || "Easy Admin Panel";
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">{title}</h1>
-      <AdminPanel />
-    </div>
-  );
+  return <AdminPanel title={title} />;
 }`.trim();
 
   const defaultClientStyleInjectorContent = `"use client";
@@ -616,20 +608,26 @@ export default function ClientStyleInjector() {
   return null;
 }`.trim();
 
-  // Admin sayfalarını oluştur
+  // Admin sayfalarını oluştur - easy-adminpanel klasörü
   const layoutPath = path.join(
     projectRoot,
     "src",
     "app",
-    "admin",
+    "easy-adminpanel",
     "layout.tsx"
   );
-  const pagePath = path.join(projectRoot, "src", "app", "admin", "page.tsx");
+  const pagePath = path.join(
+    projectRoot,
+    "src",
+    "app",
+    "easy-adminpanel",
+    "page.tsx"
+  );
   const clientStyleInjectorPath = path.join(
     projectRoot,
     "src",
     "app",
-    "admin",
+    "easy-adminpanel",
     "ClientStyleInjector.tsx"
   );
 
@@ -802,7 +800,7 @@ try {
     `\n${colors.bright}${colors.green}Entegrasyon tamamlandı!${colors.reset} Easy-AdminPanel bileşenleri başarıyla projenize eklendi.\n`
   );
   console.log(
-    `Admin paneline şu adresten erişebilirsiniz: ${colors.bright}${colors.blue}http://localhost:3000/admin${colors.reset}\n`
+    `Admin paneline şu adresten erişebilirsiniz: ${colors.bright}${colors.blue}http://localhost:3000/easy-adminpanel${colors.reset}\n`
   );
 } catch (error) {
   console.error(

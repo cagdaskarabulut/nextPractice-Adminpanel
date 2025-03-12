@@ -336,8 +336,132 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     injectStylesheet();
   }, []);
 
+  // Tabloları Yönet butonuna tıklanınca yapılacak işlem
+  const handleManageTables = () => {
+    // API isteği yap
+    fetch("/api/all-tables")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.tables) {
+          // Mevcut seçilen tabloları al
+          fetch("/api/tables")
+            .then((res) => res.json())
+            .then((currentData) => {
+              // Tabloları yönetmek için modal açılacak
+              const dialogContainer = document.createElement("div");
+              dialogContainer.className =
+                "fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50";
+              document.body.appendChild(dialogContainer);
+
+              // Modal içeriğini oluştur
+              const dialog = document.createElement("div");
+              dialog.className =
+                "bg-white rounded-xl p-6 w-96 max-w-full shadow-2xl";
+              dialog.innerHTML = `
+                <h2 class="text-xl font-semibold mb-4 text-slate-800">
+                  Yönetilecek Tabloları Seçin
+                </h2>
+                <p class="mb-4 text-slate-600">
+                  Admin panelinde gösterilecek tabloları seçin.
+                </p>
+                <div class="max-h-60 overflow-y-auto mb-4 pr-2 space-y-2" id="table-list">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-200">
+                  <button id="cancel-btn" class="px-4 py-2 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg hover:bg-slate-100">
+                    İptal
+                  </button>
+                  <button id="save-btn" class="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm">
+                    <span>Kaydet</span>
+                  </button>
+                </div>
+              `;
+              dialogContainer.appendChild(dialog);
+
+              // Tablo listesini oluştur
+              const tableList = dialog.querySelector("#table-list");
+              if (tableList) {
+                const selectedTables = currentData.tables || [];
+
+                data.tables.forEach((tableName: string) => {
+                  const isSelected = selectedTables.some(
+                    (t: any) => t.name === tableName || t === tableName
+                  );
+
+                  const tableItem = document.createElement("div");
+                  tableItem.className =
+                    "flex items-center p-2 rounded hover:bg-slate-50 transition-colors";
+                  tableItem.innerHTML = `
+                    <div class="flex items-center h-5">
+                      <input
+                        type="checkbox"
+                        id="table-${tableName}"
+                        data-table="${tableName}"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        ${isSelected ? "checked" : ""}
+                      />
+                    </div>
+                    <label
+                      for="table-${tableName}"
+                      class="ml-3 text-gray-800 text-sm font-medium select-none"
+                    >
+                      ${tableName}
+                    </label>
+                  `;
+                  tableList.appendChild(tableItem);
+                });
+              }
+
+              // İptal butonu
+              const cancelBtn = dialog.querySelector("#cancel-btn");
+              if (cancelBtn) {
+                cancelBtn.addEventListener("click", () => {
+                  document.body.removeChild(dialogContainer);
+                });
+              }
+
+              // Kaydet butonu
+              const saveBtn = dialog.querySelector("#save-btn");
+              if (saveBtn) {
+                saveBtn.addEventListener("click", () => {
+                  // Seçilen tabloları topla
+                  const checkboxes = dialog.querySelectorAll(
+                    'input[type="checkbox"]'
+                  );
+                  const selectedTables = Array.from(checkboxes)
+                    .filter((cb: any) => cb.checked)
+                    .map((cb: any) => ({
+                      name: cb.dataset.table,
+                      displayName: cb.dataset.table,
+                    }));
+
+                  // Tabloları kaydet
+                  fetch("/api/save-tables", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ tables: selectedTables }),
+                  })
+                    .then(() => {
+                      document.body.removeChild(dialogContainer);
+                      // Sayfayı yenile
+                      window.location.reload();
+                    })
+                    .catch((error) => {
+                      console.error("Error saving tables:", error);
+                    });
+                });
+              }
+            });
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching tables:", error);
+      });
+  };
+
   return (
-    <div className="easy-adminpanel">
+    <div className="easy-adminpanel w-full min-h-screen">
       {/* Header */}
       <header className="easy-adminpanel-header">
         <div className="admin-container">
@@ -363,7 +487,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               : "Veritabanınızdaki tablolar yönetilmeye hazır."}
           </p>
 
-          <button className="easy-adminpanel-button easy-adminpanel-button-primary">
+          <button
+            className="easy-adminpanel-button easy-adminpanel-button-primary"
+            onClick={handleManageTables}
+          >
             Tabloları Yönet
           </button>
         </div>
