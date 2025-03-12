@@ -52,6 +52,7 @@ const createDirectories = () => {
     path.join(projectRoot, "src", "components", "ui"),
     path.join(projectRoot, "src", "components", "utils"),
     path.join(projectRoot, "src", "components", "dialogs"),
+    path.join(projectRoot, "src", "components", "layout"),
     path.join(projectRoot, "src", "styles"),
     path.join(projectRoot, "src", "app", "easy-adminpanel"), // using easy-adminpanel instead of admin folder
     // API directories
@@ -60,6 +61,9 @@ const createDirectories = () => {
     path.join(projectRoot, "src", "app", "api", "save-tables"),
     path.join(projectRoot, "src", "app", "api", "create-table"),
     path.join(projectRoot, "src", "app", "api", "resources", "[table]"),
+    // Additional directories for enhanced UI
+    path.join(projectRoot, "src", "components", "icons"),
+    path.join(projectRoot, "src", "components", "navigation"),
   ];
 
   dirs.forEach((dir) => {
@@ -554,7 +558,7 @@ export async function DELETE(
 // Create admin pages
 const createAdminPages = () => {
   console.log(
-    `${colors.yellow}» ${colors.reset}Creating Easy-AdminPanel pages...`
+    `${colors.yellow}» ${colors.reset}Creating Enhanced Easy-AdminPanel pages...`
   );
 
   // Default content for admin pages - updated to use full screen theme
@@ -958,7 +962,9 @@ export default function ClientStyleInjector() {
   }
 
   // Create files with custom content regardless of template status
-  console.log(`${colors.green}✓ ${colors.reset}Creating custom admin pages...`);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Creating custom admin pages with enhanced UI...`
+  );
 
   // Create layout file
   fs.writeFileSync(layoutPath, defaultLayoutContent);
@@ -991,6 +997,10 @@ export default function ClientStyleInjector() {
 
 // Copy files
 const copyFiles = () => {
+  console.log(
+    `${colors.yellow}» ${colors.reset}Copying design files and components...`
+  );
+
   // UI components
   const uiFiles = fs.readdirSync(path.join(helperDir, "components", "ui"));
   uiFiles.forEach((file) => {
@@ -1022,6 +1032,48 @@ const copyFiles = () => {
     console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
   });
 
+  // Layout components if available
+  const layoutDir = path.join(helperDir, "components", "layout");
+  if (fs.existsSync(layoutDir)) {
+    const layoutFiles = fs.readdirSync(layoutDir);
+    layoutFiles.forEach((file) => {
+      const src = path.join(layoutDir, file);
+      const dest = path.join(projectRoot, "src", "components", "layout", file);
+      fs.copyFileSync(src, dest);
+      console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
+    });
+  }
+
+  // Icon components if available
+  const iconsDir = path.join(helperDir, "components", "icons");
+  if (fs.existsSync(iconsDir)) {
+    const iconFiles = fs.readdirSync(iconsDir);
+    iconFiles.forEach((file) => {
+      const src = path.join(iconsDir, file);
+      const dest = path.join(projectRoot, "src", "components", "icons", file);
+      fs.copyFileSync(src, dest);
+      console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
+    });
+  }
+
+  // Navigation components if available
+  const navDir = path.join(helperDir, "components", "navigation");
+  if (fs.existsSync(navDir)) {
+    const navFiles = fs.readdirSync(navDir);
+    navFiles.forEach((file) => {
+      const src = path.join(navDir, file);
+      const dest = path.join(
+        projectRoot,
+        "src",
+        "components",
+        "navigation",
+        file
+      );
+      fs.copyFileSync(src, dest);
+      console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
+    });
+  }
+
   // Main components
   const componentFiles = fs
     .readdirSync(path.join(helperDir, "components"))
@@ -1035,10 +1087,30 @@ const copyFiles = () => {
   });
 
   // Styles
+  console.log(
+    `${colors.yellow}» ${colors.reset}Setting up enhanced UI styles...`
+  );
   const stylesFile = path.join(helperDir, "styles", "styles.tsx");
   const stylesDest = path.join(projectRoot, "src", "styles", "adminpanel.tsx");
   fs.copyFileSync(stylesFile, stylesDest);
   console.log(`${colors.green}✓ ${colors.reset}Copied: ${stylesDest}`);
+
+  // Copy additional style files if they exist
+  const additionalStylesDir = path.join(helperDir, "styles");
+  if (fs.existsSync(additionalStylesDir)) {
+    const styleFiles = fs
+      .readdirSync(additionalStylesDir)
+      .filter((file) => file !== "styles.tsx"); // Skip the main styles file we already copied
+
+    styleFiles.forEach((file) => {
+      const src = path.join(additionalStylesDir, file);
+      const dest = path.join(projectRoot, "src", "styles", file);
+      fs.copyFileSync(src, dest);
+      console.log(
+        `${colors.green}✓ ${colors.reset}Copied additional style: ${dest}`
+      );
+    });
+  }
 };
 
 // Check documentation
@@ -1085,6 +1157,53 @@ const checkDependencies = () => {
   }
 };
 
+// Check for enhanced UI dependencies
+const checkEnhancedUIDependencies = () => {
+  try {
+    const packageJsonPath = path.join(projectRoot, "package.json");
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+    // List of UI dependencies needed for enhanced UI
+    const enhancedUIDeps = [
+      "lucide-react",
+      "tailwindcss",
+      "postcss",
+      "autoprefixer",
+    ];
+
+    const missingDeps = [];
+
+    enhancedUIDeps.forEach((dep) => {
+      const hasDependency =
+        (packageJson.dependencies && packageJson.dependencies[dep]) ||
+        (packageJson.devDependencies && packageJson.devDependencies[dep]);
+
+      if (!hasDependency) {
+        missingDeps.push(dep);
+      }
+    });
+
+    if (missingDeps.length > 0) {
+      console.log(
+        `\n${colors.bright}${colors.yellow}WARNING:${
+          colors.reset
+        } The following packages might be required for enhanced UI: ${missingDeps.join(
+          ", "
+        )}`
+      );
+      console.log(
+        `To install: ${colors.bright}npm install ${missingDeps.join(" ")}${
+          colors.reset
+        }`
+      );
+    }
+  } catch (error) {
+    console.log(
+      `\n${colors.bright}${colors.red}ERROR:${colors.reset} Cannot read package.json. Dependencies could not be checked.`
+    );
+  }
+};
+
 // Run main operations
 try {
   cleanupOldFiles();
@@ -1093,13 +1212,17 @@ try {
   createApiRoutes(); // Create API files
   createAdminPages(); // Create admin pages
   checkDependencies();
+  checkEnhancedUIDependencies(); // Check for enhanced UI dependencies
   checkDocumentation();
 
   console.log(
-    `\n${colors.bright}${colors.green}Integration complete!${colors.reset} Easy-AdminPanel components have been successfully added to your project.\n`
+    `\n${colors.bright}${colors.green}Integration complete!${colors.reset} Enhanced Easy-AdminPanel components have been successfully added to your project.\n`
   );
   console.log(
     `You can access the admin panel at: ${colors.bright}${colors.blue}http://localhost:3000/easy-adminpanel${colors.reset}\n`
+  );
+  console.log(
+    `${colors.yellow}NOTE:${colors.reset} This version includes enhanced UI with sidebars, status indicators, and improved card designs.\n`
   );
 } catch (error) {
   console.error(
