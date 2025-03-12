@@ -1724,13 +1724,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
         <div className="admin-container py-6">
           <div className="mb-6 flex justify-between items-center">
-            <h2 className="easy-adminpanel-subtitle">Database Tables</h2>
+            <h2 className="easy-adminpanel-subtitle">Veritabanı Tabloları</h2>
             <button
               className="easy-adminpanel-button easy-adminpanel-button-primary"
               onClick={handleManageTables}
             >
               <TableIcon />
-              Manage Tables
+              Tabloları Yönet
             </button>
           </div>
 
@@ -1739,37 +1739,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
             </div>
           ) : tables.length === 0 ? (
-            <div className="easy-adminpanel-card">
-              <div className="p-4 flex flex-col items-center justify-center text-center">
-                <div className="mb-4 text-admin-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-12 h-12 mb-2"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                  <p className="text-admin-gray-400 text-lg mb-4">
-                    No tables have been selected yet
-                  </p>
-                  <p className="text-admin-gray-500 mb-6">
-                    Use the "Manage Tables" button to select tables for data
-                    management
-                  </p>
-                </div>
+            <div>
+              <div className="mb-8 text-center">
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Henüz Tablo Seçilmedi
+                </h3>
+                <p className="text-admin-gray-400 max-w-2xl mx-auto">
+                  Veritabanınızdan yönetmek istediğiniz tabloları seçmek için
+                  "Tabloları Yönet" butonunu kullanın. Bu işlem sonrasında CRUD
+                  operasyonları için kartlar görüntülenecektir.
+                </p>
+              </div>
+
+              <div className="easy-adminpanel-grid opacity-50">
+                {/* Örnek placeholder kartlar (soluk görünümlü) */}
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="easy-adminpanel-card">
+                    <h3 className="easy-adminpanel-card-title">
+                      <TableIcon />
+                      Örnek Tablo {i}
+                    </h3>
+                    <p className="text-admin-gray-400 text-sm mb-4">
+                      table_name_{i}
+                    </p>
+                    <div className="flex space-x-2 mt-4">
+                      <button
+                        className="flex-1 easy-adminpanel-button easy-adminpanel-button-primary"
+                        disabled
+                      >
+                        <ListIcon />
+                        Listele
+                      </button>
+                      <button
+                        className="flex-1 easy-adminpanel-button bg-green-600 hover:bg-green-500 text-white"
+                        disabled
+                      >
+                        <PlusIcon />
+                        Ekle
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center mt-8">
                 <button
-                  className="easy-adminpanel-button easy-adminpanel-button-primary"
+                  className="easy-adminpanel-button easy-adminpanel-button-primary px-6 py-3 text-base"
                   onClick={handleManageTables}
                 >
                   <TableIcon />
-                  Select Tables
+                  Tabloları Şimdi Seçin
                 </button>
               </div>
             </div>
@@ -1790,14 +1809,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onClick={() => handleListTable(table.name)}
                     >
                       <ListIcon />
-                      List
+                      Listele
                     </button>
                     <button
                       className="flex-1 easy-adminpanel-button bg-green-600 hover:bg-green-500 text-white"
                       onClick={() => handleAddRecord(table.name)}
                     >
                       <PlusIcon />
-                      Add
+                      Ekle
                     </button>
                   </div>
                 </div>
