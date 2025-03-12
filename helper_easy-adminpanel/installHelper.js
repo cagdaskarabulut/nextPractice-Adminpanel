@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-// Renklendirme için console output fonksiyonları
+// Functions for colored console output
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
@@ -15,46 +15,46 @@ const colors = {
 };
 
 console.log(
-  `${colors.bright}${colors.blue}Easy-AdminPanel ${colors.yellow}Entegrasyon Yardımcısı${colors.reset}\n`
+  `${colors.bright}${colors.blue}Easy-AdminPanel ${colors.yellow}Integration Assistant${colors.reset}\n`
 );
 
-// Proje kök dizini
+// Project root directory
 const projectRoot = process.cwd();
 
-// Helper klasörünün olduğu yer
+// Helper directory location
 const helperDir = path.join(__dirname);
 
-// Eski easy-adminpanel klasörünü temizle (eğer varsa)
+// Clean up old files (if they exist)
 const cleanupOldFiles = () => {
-  // admin klasörünü artık silmiyoruz, çünkü easy-adminpanel kullanacağız
-  // Eski admin klasörünü kontrol et ve sil
+  // We no longer delete the admin folder since we're using easy-adminpanel
+  // Check for and remove old admin directory
   const adminDir = path.join(projectRoot, "src", "app", "admin");
   if (fs.existsSync(adminDir)) {
     console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Eski admin klasörü bulundu. Kaldırılıyor...`
+      `${colors.yellow}⚠️ ${colors.reset}Old admin directory found. Removing...`
     );
     try {
       fs.rmSync(adminDir, { recursive: true, force: true });
       console.log(
-        `${colors.green}✓ ${colors.reset}Eski klasör başarıyla kaldırıldı.`
+        `${colors.green}✓ ${colors.reset}Old directory successfully removed.`
       );
     } catch (error) {
       console.error(
-        `${colors.red}✗ ${colors.reset}Eski klasör kaldırılamadı: ${error.message}`
+        `${colors.red}✗ ${colors.reset}Couldn't remove old directory: ${error.message}`
       );
     }
   }
 };
 
-// Hedef dizinlerin oluşturulması
+// Create target directories
 const createDirectories = () => {
   const dirs = [
     path.join(projectRoot, "src", "components", "ui"),
     path.join(projectRoot, "src", "components", "utils"),
     path.join(projectRoot, "src", "components", "dialogs"),
     path.join(projectRoot, "src", "styles"),
-    path.join(projectRoot, "src", "app", "easy-adminpanel"), // admin yerine easy-adminpanel klasörü
-    // API dizinleri
+    path.join(projectRoot, "src", "app", "easy-adminpanel"), // using easy-adminpanel instead of admin folder
+    // API directories
     path.join(projectRoot, "src", "app", "api", "tables"),
     path.join(projectRoot, "src", "app", "api", "all-tables"),
     path.join(projectRoot, "src", "app", "api", "save-tables"),
@@ -65,18 +65,16 @@ const createDirectories = () => {
   dirs.forEach((dir) => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
-      console.log(`${colors.green}✓ ${colors.reset}Dizin oluşturuldu: ${dir}`);
+      console.log(`${colors.green}✓ ${colors.reset}Directory created: ${dir}`);
     }
   });
 };
 
-// API dosyalarını oluştur
+// Create API route files
 const createApiRoutes = () => {
-  console.log(
-    `${colors.yellow}» ${colors.reset}API route dosyaları oluşturuluyor...`
-  );
+  console.log(`${colors.yellow}» ${colors.reset}Creating API route files...`);
 
-  // API dosyaları için içerikler
+  // API file contents
   const tablesApiContent = `import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -94,9 +92,9 @@ export async function GET() {
     
     return NextResponse.json({ tables });
   } catch (error) {
-    console.error('Tablolar alınırken hata oluştu:', error);
+    console.error('Error getting tables:', error);
     return NextResponse.json(
-      { error: 'Tablolar alınamadı' },
+      { error: 'Failed to get tables' },
       { status: 500 }
     );
   }
@@ -128,9 +126,9 @@ export async function GET() {
     
     return NextResponse.json({ tables });
   } catch (error) {
-    console.error('Veritabanı tabloları alınırken hata oluştu:', error);
+    console.error('Error getting database tables:', error);
     return NextResponse.json(
-      { error: 'Veritabanı tabloları alınamadı' },
+      { error: 'Failed to get database tables' },
       { status: 500 }
     );
   } finally {
@@ -151,9 +149,9 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Tablolar kaydedilirken hata oluştu:', error);
+    console.error('Error saving tables:', error);
     return NextResponse.json(
-      { error: 'Tablolar kaydedilemedi' },
+      { error: 'Failed to save tables' },
       { status: 500 }
     );
   }
@@ -175,14 +173,14 @@ export async function POST(request: Request) {
     
     if (!tableName || !columns || !Array.isArray(columns) || columns.length === 0) {
       return NextResponse.json(
-        { error: 'Geçersiz tablo bilgileri' },
+        { error: 'Invalid table information' },
         { status: 400 }
       );
     }
     
     const client = await pool.connect();
     
-    // Kolon tanımlarını oluştur
+    // Create column definitions
     const columnDefinitions = columns
       .map(col => \`\${col.name} \${col.type}\${col.constraints ? ' ' + col.constraints : ''}\`)
       .join(', ');
@@ -195,16 +193,17 @@ export async function POST(request: Request) {
     \`;
     
     await client.query(createTableQuery);
+
     client.release();
     
     return NextResponse.json({ 
       success: true,
-      message: \`\${tableName} tablosu başarıyla oluşturuldu\` 
+      message: \`Table \${tableName} created successfully\` 
     });
   } catch (error) {
-    console.error('Tablo oluşturulurken hata:', error);
+    console.error('Error creating table:', error);
     return NextResponse.json(
-      { error: 'Tablo oluşturulamadı' },
+      { error: 'Failed to create table' },
       { status: 500 }
     );
   } finally {
@@ -215,7 +214,7 @@ export async function POST(request: Request) {
   const resourcesApiContent = `import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
-// GET - Tüm kayıtları veya belirli bir kaydı al
+// GET - Get all records or a specific record
 export async function GET(
   request: Request,
   { params }: { params: { table: string } }
@@ -238,7 +237,7 @@ export async function GET(
     let query = '';
     let result;
     
-    // Tek bir kayıt sorgusu
+    // Single record query
     if (id) {
       query = \`SELECT * FROM \${params.table} WHERE id = $1\`;
       result = await client.query(query, [id]);
@@ -246,7 +245,7 @@ export async function GET(
       
       if (result.rows.length === 0) {
         return NextResponse.json(
-          { error: 'Kayıt bulunamadı' },
+          { error: 'Record not found' },
           { status: 404 }
         );
       }
@@ -254,20 +253,20 @@ export async function GET(
       return NextResponse.json(result.rows[0]);
     }
     
-    // Aralık sorgusu
+    // Range query
     else if (range) {
       const [start, end] = JSON.parse(range);
       const limit = end - start + 1;
       const offset = start;
       
-      // Sıralama
+      // Sorting
       let orderBy = '';
       if (sort) {
         const [field, order] = JSON.parse(sort);
         orderBy = \`ORDER BY \${field} \${order === 'ASC' ? 'ASC' : 'DESC'}\`;
       }
       
-      // Filtreleme
+      // Filtering
       let whereClause = '';
       let queryParams: any[] = [];
       if (filter) {
@@ -288,12 +287,12 @@ export async function GET(
         }
       }
       
-      // Toplam sayı sorgusu
+      // Count query
       const countQuery = \`SELECT COUNT(*) FROM \${params.table} \${whereClause}\`;
       const countResult = await client.query(countQuery, queryParams);
       const totalCount = parseInt(countResult.rows[0].count);
       
-      // Veri sorgusu
+      // Data query
       query = \`
         SELECT * FROM \${params.table}
         \${whereClause}
@@ -304,7 +303,7 @@ export async function GET(
       result = await client.query(query, queryParams);
       client.release();
       
-      // Content-Range header'ı ile yanıt
+      // Response with Content-Range header
       const headers = new Headers();
       headers.append('Content-Range', \`\${params.table} \${start}-\${end}/\${totalCount}\`);
       
@@ -314,7 +313,7 @@ export async function GET(
       });
     }
     
-    // Tüm kayıtları getir
+    // Get all records
     else {
       query = \`SELECT * FROM \${params.table}\`;
       result = await client.query(query);
@@ -323,9 +322,9 @@ export async function GET(
       return NextResponse.json(result.rows);
     }
   } catch (error) {
-    console.error(\`\${params.table} tablosundan veri alınırken hata:\`, error);
+    console.error(\`Error getting data from \${params.table} table:\`, error);
     return NextResponse.json(
-      { error: 'Veriler alınamadı' },
+      { error: 'Failed to get data' },
       { status: 500 }
     );
   } finally {
@@ -333,7 +332,7 @@ export async function GET(
   }
 }
 
-// POST - Yeni kayıt oluştur
+// POST - Create a new record
 export async function POST(
   request: Request,
   { params }: { params: { table: string } }
@@ -349,11 +348,11 @@ export async function POST(
     const data = await request.json();
     const client = await pool.connect();
     
-    // Veri nesnesinden alan ve değer dizileri oluştur
+    // Create arrays of fields and values from the data object
     const fields = Object.keys(data);
     const values = Object.values(data);
     
-    // Parametrize edilmiş sorgu oluştur
+    // Create a parameterized query
     const placeholders = fields.map((_, index) => \`$\${index + 1}\`).join(', ');
     const query = \`
       INSERT INTO \${params.table} (\${fields.join(', ')})
@@ -366,9 +365,9 @@ export async function POST(
     
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
-    console.error(\`\${params.table} tablosuna kayıt eklenirken hata:\`, error);
+    console.error(\`Error adding record to \${params.table} table:\`, error);
     return NextResponse.json(
-      { error: 'Kayıt oluşturulamadı' },
+      { error: 'Failed to create record' },
       { status: 500 }
     );
   } finally {
@@ -376,7 +375,7 @@ export async function POST(
   }
 }
 
-// PUT - Mevcut kaydı güncelle
+// PUT - Update an existing record
 export async function PUT(
   request: Request,
   { params }: { params: { table: string } }
@@ -386,7 +385,7 @@ export async function PUT(
   
   if (!id) {
     return NextResponse.json(
-      { error: 'ID parametresi gerekli' },
+      { error: 'ID parameter is required' },
       { status: 400 }
     );
   }
@@ -402,12 +401,12 @@ export async function PUT(
     const data = await request.json();
     const client = await pool.connect();
     
-    // Güncellenecek alanları hazırla
+    // Prepare fields to update
     const updates = Object.entries(data)
       .map(([key, _], index) => \`\${key} = $\${index + 1}\`)
       .join(', ');
     
-    // id değerini en sona koy
+    // Put id value at the end
     const values = [...Object.values(data), id];
     
     const query = \`
@@ -422,16 +421,16 @@ export async function PUT(
     
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: 'Güncellenecek kayıt bulunamadı' },
+        { error: 'Record to update not found' },
         { status: 404 }
       );
     }
     
     return NextResponse.json(result.rows[0]);
   } catch (error) {
-    console.error(\`\${params.table} tablosundaki kayıt güncellenirken hata:\`, error);
+    console.error(\`Error updating record in \${params.table} table:\`, error);
     return NextResponse.json(
-      { error: 'Kayıt güncellenemedi' },
+      { error: 'Failed to update record' },
       { status: 500 }
     );
   } finally {
@@ -439,7 +438,7 @@ export async function PUT(
   }
 }
 
-// DELETE - Kaydı sil
+// DELETE - Delete a record
 export async function DELETE(
   request: Request,
   { params }: { params: { table: string } }
@@ -449,7 +448,7 @@ export async function DELETE(
   
   if (!id) {
     return NextResponse.json(
-      { error: 'ID parametresi gerekli' },
+      { error: 'ID parameter is required' },
       { status: 400 }
     );
   }
@@ -475,16 +474,16 @@ export async function DELETE(
     
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: 'Silinecek kayıt bulunamadı' },
+        { error: 'Record to delete not found' },
         { status: 404 }
       );
     }
     
     return NextResponse.json(result.rows[0]);
   } catch (error) {
-    console.error(\`\${params.table} tablosundaki kayıt silinirken hata:\`, error);
+    console.error(\`Error deleting record from \${params.table} table:\`, error);
     return NextResponse.json(
-      { error: 'Kayıt silinemedi' },
+      { error: 'Failed to delete record' },
       { status: 500 }
     );
   } finally {
@@ -492,7 +491,7 @@ export async function DELETE(
   }
 }`;
 
-  // API dosyalarını oluştur
+  // Create API files
   const tablesApiPath = path.join(
     projectRoot,
     "src",
@@ -535,38 +534,30 @@ export async function DELETE(
     "route.ts"
   );
 
-  // API dosyalarını yazma
+  // Write API files
   fs.writeFileSync(tablesApiPath, tablesApiContent);
-  console.log(`${colors.green}✓ ${colors.reset}Oluşturuldu: ${tablesApiPath}`);
+  console.log(`${colors.green}✓ ${colors.reset}Created: ${tablesApiPath}`);
 
   fs.writeFileSync(allTablesApiPath, allTablesApiContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Oluşturuldu: ${allTablesApiPath}`
-  );
+  console.log(`${colors.green}✓ ${colors.reset}Created: ${allTablesApiPath}`);
 
   fs.writeFileSync(saveTablesApiPath, saveTablesApiContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Oluşturuldu: ${saveTablesApiPath}`
-  );
+  console.log(`${colors.green}✓ ${colors.reset}Created: ${saveTablesApiPath}`);
 
   fs.writeFileSync(createTableApiPath, createTableApiContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Oluşturuldu: ${createTableApiPath}`
-  );
+  console.log(`${colors.green}✓ ${colors.reset}Created: ${createTableApiPath}`);
 
   fs.writeFileSync(resourcesApiPath, resourcesApiContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Oluşturuldu: ${resourcesApiPath}`
-  );
+  console.log(`${colors.green}✓ ${colors.reset}Created: ${resourcesApiPath}`);
 };
 
-// Admin sayfalarını oluştur
+// Create admin pages
 const createAdminPages = () => {
   console.log(
-    `${colors.yellow}» ${colors.reset}Easy-AdminPanel sayfaları oluşturuluyor...`
+    `${colors.yellow}» ${colors.reset}Creating Easy-AdminPanel pages...`
   );
 
-  // Admin sayfaları için varsayılan içerikler - full screen temayı kullanacak şekilde güncellendi
+  // Default content for admin pages - updated to use full screen theme
   const defaultLayoutContent = `import React from "react";
 import ClientStyleInjector from "./ClientStyleInjector";
 
@@ -608,20 +599,20 @@ export default function RecordsPage() {
   useEffect(() => {
     if (!table) return;
     
-    // Kayıtları getir
+    // Get records
     setLoading(true);
     fetch(\`/api/resources/\${table}\`)
       .then(res => res.json())
       .then(data => {
         setRecords(data);
         if (data.length > 0) {
-          // Tablo kolonlarını dinamik olarak belirle
+          // Dynamically determine table columns
           setColumns(Object.keys(data[0]));
         }
         setLoading(false);
       })
       .catch(error => {
-        console.error("Kayıtlar getirilirken hata oluştu:", error);
+        console.error("Error getting records:", error);
         setLoading(false);
       });
   }, [table]);
@@ -635,18 +626,18 @@ export default function RecordsPage() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+    if (confirm('Are you sure you want to delete this record?')) {
       fetch(\`/api/resources/\${table}?id=\${id}\`, {
         method: 'DELETE',
       })
         .then(res => {
           if (res.ok) {
-            // Başarıyla silindi, listeyi güncelle
+            // Successfully deleted, update the list
             setRecords(records.filter(record => record.id !== id));
           }
         })
         .catch(error => {
-          console.error("Kayıt silinirken hata oluştu:", error);
+          console.error("Error deleting record:", error);
         });
     }
   };
@@ -658,17 +649,17 @@ export default function RecordsPage() {
           className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
           onClick={handleBack}
         >
-          ← Geri
+          ← Back
         </button>
         <h1 className="easy-adminpanel-title">
-          {table} Kayıtları
+          {table} Records
         </h1>
         <div className="flex-grow"></div>
         <button 
           className="easy-adminpanel-button easy-adminpanel-button-primary"
           onClick={() => window.location.href = \`/easy-adminpanel/add-record?table=\${table}\`}
         >
-          + Yeni Ekle
+          + Add New
         </button>
       </div>
 
@@ -679,7 +670,7 @@ export default function RecordsPage() {
       ) : records.length === 0 ? (
         <div className="easy-adminpanel-card">
           <p className="text-admin-gray-400 mb-4">
-            Henüz hiç kayıt bulunmuyor. Yeni kayıt eklemek için "Yeni Ekle" butonunu kullanabilirsiniz.
+            No records found. You can add a new record using the "Add New" button.
           </p>
         </div>
       ) : (
@@ -690,7 +681,7 @@ export default function RecordsPage() {
                 {columns.map(column => (
                   <th key={column}>{column}</th>
                 ))}
-                <th className="text-right">İşlemler</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -704,13 +695,13 @@ export default function RecordsPage() {
                       className="easy-adminpanel-button easy-adminpanel-button-secondary mr-2"
                       onClick={() => handleEdit(record.id)}
                     >
-                      Düzenle
+                      Edit
                     </button>
                     <button 
                       className="easy-adminpanel-button bg-red-600 hover:bg-red-500 text-white"
                       onClick={() => handleDelete(record.id)}
                     >
-                      Sil
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -739,17 +730,17 @@ export default function AddRecordPage() {
   useEffect(() => {
     if (!table) return;
     
-    // Örnek bir kayıt getirerek tablo yapısını anla
+    // Get a sample record to understand table structure
     fetch(\`/api/resources/\${table}\`)
       .then(res => res.json())
       .then(data => {
         if (data.length > 0) {
           setTableSample(data[0]);
-          // ID dışındaki tüm kolonları al
+          // Get all columns except ID
           const cols = Object.keys(data[0]).filter(key => key !== 'id');
           setColumns(cols);
           
-          // Boş bir kayıt oluştur
+          // Create an empty record
           const emptyRecord = {};
           cols.forEach(col => {
             emptyRecord[col] = '';
@@ -758,7 +749,7 @@ export default function AddRecordPage() {
         }
       })
       .catch(error => {
-        console.error("Tablo yapısı belirlenirken hata oluştu:", error);
+        console.error("Error determining table structure:", error);
       });
   }, [table]);
 
@@ -783,17 +774,17 @@ export default function AddRecordPage() {
     })
       .then(res => {
         if (res.ok) {
-          // Başarılı
+          // Success
           window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
         } else {
           setLoading(false);
-          alert('Kayıt eklenirken bir hata oluştu!');
+          alert('An error occurred while adding the record!');
         }
       })
       .catch(error => {
-        console.error("Kayıt eklenirken hata oluştu:", error);
+        console.error("Error adding record:", error);
         setLoading(false);
-        alert('Kayıt eklenirken bir hata oluştu!');
+        alert('An error occurred while adding the record!');
       });
   };
 
@@ -808,10 +799,10 @@ export default function AddRecordPage() {
           className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
           onClick={handleBack}
         >
-          ← Geri
+          ← Back
         </button>
         <h1 className="easy-adminpanel-title">
-          {table} - Yeni Kayıt Ekle
+          {table} - Add New Record
         </h1>
       </div>
 
@@ -822,7 +813,7 @@ export default function AddRecordPage() {
           </div>
         ) : columns.length === 0 ? (
           <p className="text-admin-gray-400">
-            Tablo yapısı belirlenemedi. Lütfen tabloda en az bir kayıt olduğundan emin olun.
+            Could not determine table structure. Please ensure there is at least one record in the table.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -848,14 +839,14 @@ export default function AddRecordPage() {
                 className="easy-adminpanel-button easy-adminpanel-button-secondary"
                 onClick={handleBack}
               >
-                İptal
+                Cancel
               </button>
               <button 
                 type="submit"
                 className="easy-adminpanel-button easy-adminpanel-button-primary"
                 disabled={loading}
               >
-                Kaydet
+                Save
               </button>
             </div>
           </form>
@@ -872,15 +863,15 @@ import { injectStylesheet } from "../../styles/adminpanel";
 
 export default function ClientStyleInjector() {
   useEffect(() => {
-    // Stilleri enjekte et
+    // Inject styles
     injectStylesheet();
   }, []);
 
-  // Hiçbir şey render etmeyen bir bileşen
+  // A component that doesn't render anything
   return null;
 }`.trim();
 
-  // Admin sayfalarını oluştur - easy-adminpanel klasörü
+  // Create admin pages - easy-adminpanel folder
   const layoutPath = path.join(
     projectRoot,
     "src",
@@ -903,7 +894,7 @@ export default function ClientStyleInjector() {
     "ClientStyleInjector.tsx"
   );
 
-  // Records ve add-record sayfaları için klasörler
+  // Directories for records and add-record pages
   const recordsDirPath = path.join(
     projectRoot,
     "src",
@@ -919,7 +910,7 @@ export default function ClientStyleInjector() {
     "add-record"
   );
 
-  // Klasörleri oluştur
+  // Create directories
   if (!fs.existsSync(recordsDirPath)) {
     fs.mkdirSync(recordsDirPath, { recursive: true });
   }
@@ -927,14 +918,14 @@ export default function ClientStyleInjector() {
     fs.mkdirSync(addRecordDirPath, { recursive: true });
   }
 
-  // Records ve add-record sayfa dosyaları
+  // Records and add-record page files
   const recordsPagePath = path.join(recordsDirPath, "page.tsx");
   const addRecordPagePath = path.join(addRecordDirPath, "page.tsx");
 
-  // Önce templates klasöründen kopyalamayı dene
+  // Try to copy from templates directory first
   let templatesFound = false;
   try {
-    // Farklı potansiyel template dizinlerini dene
+    // Try different potential template directories
     const possibleTemplateDirs = [
       path.join(path.dirname(path.dirname(helperDir)), "templates"),
       path.join(path.dirname(helperDir), "templates"),
@@ -952,68 +943,64 @@ export default function ClientStyleInjector() {
     for (const templateDir of possibleTemplateDirs) {
       if (fs.existsSync(templateDir)) {
         console.log(
-          `${colors.blue}ℹ ${colors.reset}Templates dizini bulundu: ${templateDir}`
+          `${colors.blue}ℹ ${colors.reset}Templates directory found: ${templateDir}`
         );
 
-        // Template dosyaları var ancak biz yine de istenilen custom dosyaları kullanacağız
+        // We have template files but we'll still use our custom files
         templatesFound = true;
         break;
       }
     }
   } catch (error) {
     console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Template arama hatası: ${error.message}`
+      `${colors.yellow}⚠️ ${colors.reset}Template search error: ${error.message}`
     );
   }
 
-  // Template dosyalarının durumuna bakmaksızın istenilen özel içerikle dosyaları oluşturuyoruz
-  console.log(
-    `${colors.green}✓ ${colors.reset}Özel admin sayfaları oluşturuluyor...`
-  );
+  // Create files with custom content regardless of template status
+  console.log(`${colors.green}✓ ${colors.reset}Creating custom admin pages...`);
 
-  // Layout dosyasını oluştur
+  // Create layout file
   fs.writeFileSync(layoutPath, defaultLayoutContent);
   console.log(
-    `${colors.green}✓ ${colors.reset}Layout.tsx oluşturuldu: ${layoutPath}`
+    `${colors.green}✓ ${colors.reset}Layout.tsx created: ${layoutPath}`
   );
 
-  // Page dosyasını oluştur
+  // Create page file
   fs.writeFileSync(pagePath, defaultPageContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Page.tsx oluşturuldu: ${pagePath}`
-  );
+  console.log(`${colors.green}✓ ${colors.reset}Page.tsx created: ${pagePath}`);
 
-  // ClientStyleInjector dosyasını oluştur
+  // Create ClientStyleInjector file
   fs.writeFileSync(clientStyleInjectorPath, defaultClientStyleInjectorContent);
   console.log(
-    `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx oluşturuldu: ${clientStyleInjectorPath}`
+    `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx created: ${clientStyleInjectorPath}`
   );
 
-  // Records sayfasını oluştur
+  // Create Records page
   fs.writeFileSync(recordsPagePath, recordsPageContent);
   console.log(
-    `${colors.green}✓ ${colors.reset}Records/page.tsx oluşturuldu: ${recordsPagePath}`
+    `${colors.green}✓ ${colors.reset}Records/page.tsx created: ${recordsPagePath}`
   );
 
-  // Add-record sayfasını oluştur
+  // Create Add-record page
   fs.writeFileSync(addRecordPagePath, addRecordPageContent);
   console.log(
-    `${colors.green}✓ ${colors.reset}Add-record/page.tsx oluşturuldu: ${addRecordPagePath}`
+    `${colors.green}✓ ${colors.reset}Add-record/page.tsx created: ${addRecordPagePath}`
   );
 };
 
-// Dosyaların kopyalanması
+// Copy files
 const copyFiles = () => {
-  // UI bileşenleri
+  // UI components
   const uiFiles = fs.readdirSync(path.join(helperDir, "components", "ui"));
   uiFiles.forEach((file) => {
     const src = path.join(helperDir, "components", "ui", file);
     const dest = path.join(projectRoot, "src", "components", "ui", file);
     fs.copyFileSync(src, dest);
-    console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${dest}`);
+    console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
   });
 
-  // Utils bileşenleri
+  // Utils components
   const utilsFiles = fs.readdirSync(
     path.join(helperDir, "components", "utils")
   );
@@ -1021,10 +1008,10 @@ const copyFiles = () => {
     const src = path.join(helperDir, "components", "utils", file);
     const dest = path.join(projectRoot, "src", "components", "utils", file);
     fs.copyFileSync(src, dest);
-    console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${dest}`);
+    console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
   });
 
-  // Dialog bileşenleri
+  // Dialog components
   const dialogFiles = fs.readdirSync(
     path.join(helperDir, "components", "dialogs")
   );
@@ -1032,10 +1019,10 @@ const copyFiles = () => {
     const src = path.join(helperDir, "components", "dialogs", file);
     const dest = path.join(projectRoot, "src", "components", "dialogs", file);
     fs.copyFileSync(src, dest);
-    console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${dest}`);
+    console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
   });
 
-  // Ana bileşenler
+  // Main components
   const componentFiles = fs
     .readdirSync(path.join(helperDir, "components"))
     .filter((file) => file.endsWith(".tsx") || file.endsWith(".ts"));
@@ -1044,34 +1031,34 @@ const copyFiles = () => {
     const src = path.join(helperDir, "components", file);
     const dest = path.join(projectRoot, "src", "components", file);
     fs.copyFileSync(src, dest);
-    console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${dest}`);
+    console.log(`${colors.green}✓ ${colors.reset}Copied: ${dest}`);
   });
 
-  // Stiller
+  // Styles
   const stylesFile = path.join(helperDir, "styles", "styles.tsx");
   const stylesDest = path.join(projectRoot, "src", "styles", "adminpanel.tsx");
   fs.copyFileSync(stylesFile, stylesDest);
-  console.log(`${colors.green}✓ ${colors.reset}Kopyalandı: ${stylesDest}`);
+  console.log(`${colors.green}✓ ${colors.reset}Copied: ${stylesDest}`);
 };
 
-// Belge kontrolü
+// Check documentation
 const checkDocumentation = () => {
   const readmePath = path.join(helperDir, "README.md");
   if (fs.existsSync(readmePath)) {
     console.log(
-      `\n${colors.bright}${colors.yellow}ÖNEMLİ:${colors.reset} Entegrasyon rehberi için lütfen okuyun: ${readmePath}`
+      `\n${colors.bright}${colors.yellow}IMPORTANT:${colors.reset} Please read the integration guide: ${readmePath}`
     );
   }
 
   const apiDocsPath = path.join(helperDir, "api-docs.md");
   if (fs.existsSync(apiDocsPath)) {
     console.log(
-      `${colors.bright}${colors.yellow}ÖNEMLİ:${colors.reset} API entegrasyonu için lütfen okuyun: ${apiDocsPath}`
+      `${colors.bright}${colors.yellow}IMPORTANT:${colors.reset} For API integration, please read: ${apiDocsPath}`
     );
   }
 };
 
-// Lucide React bağımlılık kontrolü
+// Check Lucide React dependency
 const checkDependencies = () => {
   try {
     const packageJsonPath = path.join(projectRoot, "package.json");
@@ -1085,38 +1072,38 @@ const checkDependencies = () => {
 
     if (!hasDependency && !hasDevDependency) {
       console.log(
-        `\n${colors.bright}${colors.yellow}UYARI:${colors.reset} lucide-react paketi bulunamadı. Yüklemeniz gerekebilir.`
+        `\n${colors.bright}${colors.yellow}WARNING:${colors.reset} lucide-react package not found. You may need to install it.`
       );
       console.log(
-        `Yüklemek için: ${colors.bright}npm install lucide-react${colors.reset} veya ${colors.bright}yarn add lucide-react${colors.reset}`
+        `To install: ${colors.bright}npm install lucide-react${colors.reset} or ${colors.bright}yarn add lucide-react${colors.reset}`
       );
     }
   } catch (error) {
     console.log(
-      `\n${colors.bright}${colors.red}HATA:${colors.reset} package.json okunamadı. Bağımlılıklar kontrol edilemedi.`
+      `\n${colors.bright}${colors.red}ERROR:${colors.reset} Cannot read package.json. Dependencies could not be checked.`
     );
   }
 };
 
-// Ana işlemleri çalıştır
+// Run main operations
 try {
   cleanupOldFiles();
   createDirectories();
   copyFiles();
-  createApiRoutes(); // API dosyalarını oluştur
-  createAdminPages(); // Admin sayfalarını oluştur
+  createApiRoutes(); // Create API files
+  createAdminPages(); // Create admin pages
   checkDependencies();
   checkDocumentation();
 
   console.log(
-    `\n${colors.bright}${colors.green}Entegrasyon tamamlandı!${colors.reset} Easy-AdminPanel bileşenleri başarıyla projenize eklendi.\n`
+    `\n${colors.bright}${colors.green}Integration complete!${colors.reset} Easy-AdminPanel components have been successfully added to your project.\n`
   );
   console.log(
-    `Admin paneline şu adresten erişebilirsiniz: ${colors.bright}${colors.blue}http://localhost:3000/easy-adminpanel${colors.reset}\n`
+    `You can access the admin panel at: ${colors.bright}${colors.blue}http://localhost:3000/easy-adminpanel${colors.reset}\n`
   );
 } catch (error) {
   console.error(
-    `\n${colors.bright}${colors.red}HATA:${colors.reset} ${error.message}`
+    `\n${colors.bright}${colors.red}ERROR:${colors.reset} ${error.message}`
   );
   process.exit(1);
 }

@@ -4,6 +4,7 @@
 Bu proje, **React-Admin** kütüphanesi kullanılarak **Next.js** tabanlı bir **admin paneli** geliştirmeyi hedefler. Panel, **Vercel PostgreSQL** veritabanındaki tabloları temel alarak dinamik CRUD ekranları oluşturur. 
 
 **Geliştirme Mantığı:**
+- Yazılım Dili olarak **İngilizce** kullanılacaktır. Yorum satırları da **İngilizce** olacaktır.
 - **Varsayılan olarak herhangi bir CRUD ekranı oluşturulmaz.**
 - Admin paneli üzerinden **kullanıcı tarafından ismi verilen tablolar seçilir.**
 - Seçilen tabloların alanları **otomatik olarak algılanır.**

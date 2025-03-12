@@ -1,85 +1,85 @@
-# Easy-AdminPanel Entegrasyon Rehberi
+# Easy-AdminPanel Integration Guide
 
-Bu dosya, Easy-AdminPanel npm paketini kendi projenizde başarıyla entegre etmeniz için gereken adımları içerir. Bu rehberi takip ederek, paketimizin tüm görsel ve işlevsel özelliklerinden tam olarak yararlanabilirsiniz.
+This file contains the steps necessary to successfully integrate the Easy-AdminPanel npm package into your project. By following this guide, you can fully utilize all the visual and functional features of our package.
 
-## Kurulum Adımları
+## Installation Steps
 
-### 1. Gerekli Paketlerin Kurulumu
+### 1. Required Package Installation
 
-Öncelikle, paketimizi npm üzerinden yükleyin:
+First, install our package via npm:
 
 ```bash
 npm install easy-adminpanel
 ```
 
-Bu paket, Next.js projelerinde kullanılmak üzere tasarlanmıştır. Ek bağımlılıkları da kurduğunuzdan emin olun:
+This package is designed to be used in Next.js projects. Make sure to install the additional dependencies:
 
 ```bash
 npm install lucide-react
 ```
 
-Ardından, kurulum yardımcısını çalıştırın:
+Then, run the installation assistant:
 
 ```bash
 npx easy-adminpanel-setup
 ```
 
-Bu komut, gerekli tüm bileşenleri ve stil dosyalarını projenize ekleyecek ve `/admin` yolunda bir admin paneli oluşturacaktır.
+This command will add all necessary components and style files to your project and create an admin panel at the `/admin` path.
 
-### 2. Stil Dosyalarının Entegrasyonu
+### 2. Style Files Integration
 
-Easy-AdminPanel, özel bir CSS stilini kullanır. Bu dosyaları projenize dahil etmek için aşağıdaki adımları izleyin:
+Easy-AdminPanel uses a custom CSS style. Follow these steps to include these files in your project:
 
-#### a. Stil Dosyalarını Kopyalayın
+#### a. Copy Style Files
 
-`helper_easy-adminpanel/styles/styles.tsx` dosyasını kendi projenize (`src/styles/adminpanel.tsx` olarak) kopyalayın. Bu dosya, tüm stil tanımlarını içerir.
+Copy the `helper_easy-adminpanel/styles/styles.tsx` file to your project (as `src/styles/adminpanel.tsx`). This file contains all style definitions.
 
-#### b. Stilleri Global Olarak Ekleyin
+#### b. Add Styles Globally
 
-Next.js projenizin `_app.tsx` veya `layout.tsx` dosyasına şu kodu ekleyin:
+Add the following code to your Next.js project's `_app.tsx` or `layout.tsx` file:
 
 ```tsx
 import { injectStylesheet } from '../styles/adminpanel';
 
 // ...
 
-// En üst düzey bileşeninizin içinde (useEffect içinde)
+// Inside your top-level component (within useEffect)
 useEffect(() => {
-  // Stilleri enjekte et
+  // Inject styles
   injectStylesheet();
 }, []);
 ```
 
-### 3. Bileşenlerin Kopyalanması ve Düzenlenmesi
+### 3. Copying and Editing Components
 
-Easy-AdminPanel'in bazı özel bileşenlerini ve tiplerinizi projenize kopyalamanız gerekiyor:
+You need to copy some special components and types from Easy-AdminPanel to your project:
 
-1. `helper_easy-adminpanel/components/ui` klasörünü `src/components/ui` dizinine kopyalayın
-2. `helper_easy-adminpanel/components/utils` klasörünü `src/components/utils` dizinine kopyalayın
-3. `helper_easy-adminpanel/components/dialogs` klasörünü `src/components/dialogs` dizinine kopyalayın
-4. `helper_easy-adminpanel/components/types.ts` dosyasını `src/components/types.ts` olarak kopyalayın
+1. Copy the `helper_easy-adminpanel/components/ui` folder to the `src/components/ui` directory
+2. Copy the `helper_easy-adminpanel/components/utils` folder to the `src/components/utils` directory
+3. Copy the `helper_easy-adminpanel/components/dialogs` folder to the `src/components/dialogs` directory
+4. Copy the `helper_easy-adminpanel/components/types.ts` file as `src/components/types.ts`
 
-### 4. API Rotalarının Oluşturulması
+### 4. Creating API Routes
 
-Easy-AdminPanel, aşağıdaki API rotalarını beklemektedir. API klasörünüzdeki rotaları buna göre oluşturun:
+Easy-AdminPanel expects the following API routes. Create the routes in your API folder accordingly:
 
-1. `/api/tables` - Kullanılabilir tüm tabloları alma
-2. `/api/all-tables` - Veritabanındaki tüm tabloları getirme
-3. `/api/save-tables` - Seçilen tabloları kaydetme
-4. `/api/create-table` - Yeni tablo oluşturma
-5. `/api/resources/[table]` - Tablo verileri için CRUD işlemleri
+1. `/api/tables` - Get all available tables
+2. `/api/all-tables` - Get all tables in the database
+3. `/api/save-tables` - Save selected tables
+4. `/api/create-table` - Create a new table
+5. `/api/resources/[table]` - CRUD operations for table data
 
-### 5. Font Entegrasyonu
+### 5. Font Integration
 
-Panel, Inter fontunu kullanır. Font'u projenize eklemek için:
+The panel uses the Inter font. To add the font to your project:
 
-1. Layout dosyanızın `<head>` bölümüne aşağıdaki kodu ekleyin:
+1. Add the following code to the `<head>` section of your layout file:
 
 ```html
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 ```
 
-2. Global CSS dosyanıza, `html` elementine font tanımını ekleyin:
+2. Add the font definition to the `html` element in your global CSS file:
 
 ```css
 html {
@@ -87,9 +87,9 @@ html {
 }
 ```
 
-### 6. AdminPanel Bileşeninin Kullanımı
+### 6. Using the AdminPanel Component
 
-Artık her şeyi hazırladığınıza göre, AdminPanel bileşenini aşağıdaki gibi kullanabilirsiniz:
+Now that you have everything set up, you can use the AdminPanel component as follows:
 
 ```tsx
 import { AdminPanel } from 'easy-adminpanel';
@@ -103,31 +103,31 @@ export default function AdminPage() {
 }
 ```
 
-Panel şu adreste erişilebilir olacaktır: `http://localhost:3000/admin`
+The panel will be accessible at: `http://localhost:3000/admin`
 
-## Sorun Giderme
+## Troubleshooting
 
-Eğer tasarımla ilgili sorunlar yaşıyorsanız, aşağıdakileri kontrol edin:
+If you encounter design issues, check the following:
 
-1. Stil dosyasının doğru şekilde enjekte edildiğinden emin olun
-2. `easy-adminpanel` CSS sınıfının en üst düzey kapsayıcıya uygulandığından emin olun
-3. Inter fontunun yüklendiğinden emin olun
-4. Lucide icon paketinin düzgün yüklendiğinden emin olun
+1. Make sure the style file is properly injected
+2. Make sure the `easy-adminpanel` CSS class is applied to the top-level container
+3. Make sure the Inter font is loaded
+4. Make sure the Lucide icon package is properly installed
 
-## Özelleştirme
+## Customization
 
-AdminPanel'in stillerini özelleştirmek için, `src/styles/adminpanel.tsx` dosyasını düzenleyebilirsiniz. CSS değişkenlerini değiştirerek panel renklerini ve temel görsel özellikleri güncelleyebilirsiniz.
+To customize the styles of the AdminPanel, you can edit the `src/styles/adminpanel.tsx` file. You can update the panel colors and basic visual properties by changing the CSS variables.
 
 ```css
 :root {
-  --admin-dark-blue-900: #0D1F36; /* Ana arkaplan rengi */
-  --admin-dark-blue-800: #12263F; /* Kart arkaplan rengi */
-  --admin-blue-500: #3378FF; /* Birincil renk */
-  --admin-blue-400: #4A8CFF; /* Birincil renk (hover) */
-  /* Diğer renkler... */
+  --admin-dark-blue-900: #0D1F36; /* Main background color */
+  --admin-dark-blue-800: #12263F; /* Card background color */
+  --admin-blue-500: #3378FF; /* Primary color */
+  --admin-blue-400: #4A8CFF; /* Primary color (hover) */
+  /* Other colors... */
 }
 ```
 
-## API Oluşturma Rehberi
+## API Creation Guide
 
-API dosyalarının nasıl oluşturulacağı hakkında daha fazla bilgi için `helper_easy-adminpanel/api-docs.md` dosyasını inceleyebilirsiniz. 
+For more information on how to create API files, please refer to the `helper_easy-adminpanel/api-docs.md` file. 

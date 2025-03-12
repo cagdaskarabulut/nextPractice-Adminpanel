@@ -2,14 +2,14 @@
 
 import React, { useEffect } from "react";
 
-// CSS dosyasını içe aktarmak için bir fonksiyon
+// Function to import CSS styles
 export const injectStylesheet = () => {
-  // Eğer stil zaten yüklenmişse tekrar yükleme
+  // If style is already loaded, don't load it again
   if (document.getElementById("easy-adminpanel-styles")) {
     return;
   }
 
-  // CSS kodunu doğrudan burada tanımlıyoruz
+  // We define CSS code directly here
   const cssContent = `/* Easy AdminPanel Styles */
   :root {
     --admin-dark-blue-900: #0D1F36;
@@ -27,7 +27,7 @@ export const injectStylesheet = () => {
     --admin-gray-500: #8696A7;
   }
   
-  /* Temel Konteyner Stilleri */
+  /* Basic Container Styles */
   .admin-container {
     max-width: 95%;
     margin-left: auto;
@@ -48,7 +48,7 @@ export const injectStylesheet = () => {
     box-shadow: 0 5px 15px 0 rgba(0,0,0,0.1);
   }
   
-  /* Sidebar Stilleri */
+  /* Sidebar Styles */
   .admin-sidebar {
     position: fixed;
     left: 0;
@@ -78,7 +78,7 @@ export const injectStylesheet = () => {
     background-color: var(--admin-dark-blue-600);
   }
   
-  /* Tipografi Stilleri */
+  /* Typography Styles */
   .admin-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -91,7 +91,7 @@ export const injectStylesheet = () => {
     color: var(--admin-gray-200);
   }
   
-  /* Buton Stilleri */
+  /* Button Styles */
   .admin-button-primary {
     background-color: var(--admin-blue-500);
     color: white;
@@ -118,7 +118,7 @@ export const injectStylesheet = () => {
     background-color: var(--admin-dark-blue-600);
   }
   
-  /* Tablo Stilleri */
+  /* Table Styles */
   .admin-table {
     width: 100%;
     text-align: left;
@@ -142,7 +142,7 @@ export const injectStylesheet = () => {
     background-color: var(--admin-dark-blue-700);
   }
   
-  /* Form Stilleri */
+  /* Form Styles */
   .admin-input {
     background-color: var(--admin-dark-blue-700);
     border: 1px solid var(--admin-dark-blue-600);
@@ -170,7 +170,7 @@ export const injectStylesheet = () => {
     box-shadow: 0 0 0 2px var(--admin-blue-500);
   }
   
-  /* Toggle Stilleri */
+  /* Toggle Styles */
   .admin-toggle {
     position: relative;
     display: inline-flex;
@@ -199,7 +199,7 @@ export const injectStylesheet = () => {
     transform: translateX(1.25rem);
   }
   
-  /* Scroll Bar Stilleri */
+  /* Scroll Bar Styles */
   .easy-adminpanel ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -218,7 +218,7 @@ export const injectStylesheet = () => {
     background: var(--admin-blue-500);
   }
   
-  /* Animasyonlar */
+  /* Animations */
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -232,7 +232,7 @@ export const injectStylesheet = () => {
     animation: fadeIn 0.5s ease-in-out;
   }
   
-  /* AdminPanel Komponent Stilleri */
+  /* AdminPanel Component Styles */
   .easy-adminpanel {
     min-height: 100vh;
     background-color: var(--admin-dark-blue-900);
@@ -300,7 +300,7 @@ export const injectStylesheet = () => {
   style.innerHTML = cssContent;
   document.head.appendChild(style);
 
-  // Font eklemek için link elementi
+  // Add font link element
   const fontLink = document.createElement("link");
   fontLink.rel = "stylesheet";
   fontLink.href =
@@ -308,20 +308,20 @@ export const injectStylesheet = () => {
   document.head.appendChild(fontLink);
 };
 
-// Ana AdminPanel componenti
+// Main AdminPanel component
 interface AdminPanelProps {
   /**
-   * Bağlantı dizesi
+   * Connection string
    */
   connectionString?: string;
 
   /**
-   * Veritabanı türü (otomatik tespit edilemezse)
+   * Database type (if can't be detected automatically)
    */
   databaseType?: "postgresql" | "mysql" | "mssql";
 
   /**
-   * Panel başlığı
+   * Panel title
    */
   title?: string;
 }
@@ -331,20 +331,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   databaseType,
   title = "Easy-AdminPanel",
 }) => {
-  // State tanımlıyoruz - tablolar listesi için
+  // Define state for tables list
   const [tables, setTables] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  // Sayfa yüklendiğinde tabloları getir
+  // Load tables when the page loads
   useEffect(() => {
-    // Component monte edildiğinde stilleri enjekte et
+    // Inject styles when the component mounts
     injectStylesheet();
 
-    // Tabloları yükle
+    // Load tables
     loadTables();
   }, []);
 
-  // Tabloları getiren fonksiyon
+  // Function to load tables
   const loadTables = () => {
     setLoading(true);
     fetch("/api/tables")
@@ -358,54 +358,54 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Tablolar yüklenirken hata oluştu:", error);
+        console.error("Error loading tables:", error);
         setTables([]);
         setLoading(false);
       });
   };
 
-  // Tabloları Yönet butonuna tıklanınca yapılacak işlem
+  // Action when Manage Tables button is clicked
   const handleManageTables = () => {
-    // API isteği yap
+    // Make API request
     fetch("/api/all-tables")
       .then((response) => response.json())
       .then((data) => {
         if (data.tables) {
-          // Mevcut seçilen tabloları al
+          // Get currently selected tables
           fetch("/api/tables")
             .then((res) => res.json())
             .then((currentData) => {
-              // Tabloları yönetmek için modal açılacak
+              // Create modal for managing tables
               const dialogContainer = document.createElement("div");
               dialogContainer.className =
                 "fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50";
               document.body.appendChild(dialogContainer);
 
-              // Modal içeriğini oluştur
+              // Create modal content
               const dialog = document.createElement("div");
               dialog.className =
                 "bg-white rounded-xl p-6 w-96 max-w-full shadow-2xl";
               dialog.innerHTML = `
                 <h2 class="text-xl font-semibold mb-4 text-slate-800">
-                  Yönetilecek Tabloları Seçin
+                  Select Tables to Manage
                 </h2>
                 <p class="mb-4 text-slate-600">
-                  Admin panelinde gösterilecek tabloları seçin.
+                  Choose the tables to display in your admin panel.
                 </p>
                 <div class="max-h-60 overflow-y-auto mb-4 pr-2 space-y-2" id="table-list">
                 </div>
                 <div class="flex justify-end space-x-2 pt-2 border-t border-slate-200">
                   <button id="cancel-btn" class="px-4 py-2 text-slate-600 hover:text-slate-900 text-sm font-medium rounded-lg hover:bg-slate-100">
-                    İptal
+                    Cancel
                   </button>
                   <button id="save-btn" class="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm">
-                    <span>Kaydet</span>
+                    <span>Save</span>
                   </button>
                 </div>
               `;
               dialogContainer.appendChild(dialog);
 
-              // Tablo listesini oluştur
+              // Create table list
               const tableList = dialog.querySelector("#table-list");
               if (tableList) {
                 const selectedTables = currentData.tables || [];
@@ -439,7 +439,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 });
               }
 
-              // İptal butonu
+              // Cancel button
               const cancelBtn = dialog.querySelector("#cancel-btn");
               if (cancelBtn) {
                 cancelBtn.addEventListener("click", () => {
@@ -447,11 +447,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 });
               }
 
-              // Kaydet butonu
+              // Save button
               const saveBtn = dialog.querySelector("#save-btn");
               if (saveBtn) {
                 saveBtn.addEventListener("click", () => {
-                  // Seçilen tabloları topla
+                  // Collect selected tables
                   const checkboxes = dialog.querySelectorAll(
                     'input[type="checkbox"]'
                   );
@@ -462,7 +462,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       displayName: cb.dataset.table,
                     }));
 
-                  // Tabloları kaydet
+                  // Save tables
                   fetch("/api/save-tables", {
                     method: "POST",
                     headers: {
@@ -472,7 +472,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   })
                     .then(() => {
                       document.body.removeChild(dialogContainer);
-                      // Tabloları yeniden yükle - sayfa yenilemek yerine
+                      // Reload tables instead of refreshing page
                       loadTables();
                     })
                     .catch((error) => {
@@ -488,12 +488,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       });
   };
 
-  // Bir tablonun kayıtlarını listeler
+  // List records for a table
   const handleListTable = (tableName: string) => {
     window.location.href = `/easy-adminpanel/records?table=${tableName}`;
   };
 
-  // Tabloya yeni kayıt ekle
+  // Add new record to table
   const handleAddRecord = (tableName: string) => {
     window.location.href = `/easy-adminpanel/add-record?table=${tableName}`;
   };
@@ -506,10 +506,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex justify-between items-center">
             <h1 className="easy-adminpanel-title">{title}</h1>
 
-            {/* Veritabanı durumu göstergesi */}
+            {/* Database status indicator */}
             <div className="px-3 py-2 rounded bg-admin-dark-blue-700">
               <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
-              <span>Bağlı</span>
+              <span>Connected</span>
             </div>
           </div>
         </div>
@@ -517,12 +517,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       <div className="admin-container py-6">
         <div className="mb-6 flex justify-between items-center">
-          <h2 className="easy-adminpanel-subtitle">Veritabanı Tabloları</h2>
+          <h2 className="easy-adminpanel-subtitle">Database Tables</h2>
           <button
             className="easy-adminpanel-button easy-adminpanel-button-primary"
             onClick={handleManageTables}
           >
-            Tabloları Yönet
+            Manage Tables
           </button>
         </div>
 
@@ -533,8 +533,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         ) : tables.length === 0 ? (
           <div className="easy-adminpanel-card">
             <p className="text-admin-gray-400 mb-4">
-              Henüz hiç tablo seçilmemiş. Veri yönetimi için "Tabloları Yönet"
-              butonunu kullanarak tablolarınızı seçin.
+              No tables have been selected yet. Use the "Manage Tables" button
+              to select tables for data management.
             </p>
           </div>
         ) : (
@@ -552,13 +552,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="flex-1 easy-adminpanel-button easy-adminpanel-button-primary"
                     onClick={() => handleListTable(table.name)}
                   >
-                    Listele
+                    List
                   </button>
                   <button
                     className="flex-1 easy-adminpanel-button bg-green-600 hover:bg-green-500 text-white"
                     onClick={() => handleAddRecord(table.name)}
                   >
-                    Ekle
+                    Add
                   </button>
                 </div>
               </div>
