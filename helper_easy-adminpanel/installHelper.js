@@ -580,7 +580,7 @@ export default function AdminLayout({
 
   const defaultPageContent = `"use client";
 
-import { AdminPanel } from "@/styles/adminpanel";
+import { AdminPanel } from "@/components/AdminPanel";
 
 export default function EasyAdminPage() {
   const title = process.env.EASY_ADMIN_TITLE || "Easy Admin Panel";
@@ -592,6 +592,7 @@ export default function EasyAdminPage() {
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { DatabaseIcon, GridIcon, TableIcon } from '@/styles/adminpanel';
 
 export default function RecordsPage() {
   const searchParams = useSearchParams();
@@ -599,8 +600,19 @@ export default function RecordsPage() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [cssLoaded, setCssLoaded] = useState(false);
+  const [dbInfo, setDbInfo] = useState({
+    connected: true,
+    type: "postgresql",
+  });
 
   useEffect(() => {
+    // Mark CSS as loaded after a small delay to match AdminPanel behavior
+    setTimeout(() => {
+      setCssLoaded(true);
+    }, 300);
+    
     if (!table) return;
     
     // Get records
@@ -631,12 +643,11 @@ export default function RecordsPage() {
 
   const handleDelete = (id) => {
     if (confirm('Are you sure you want to delete this record?')) {
-      fetch(\`/api/resources/\${table}?id=\${id}\`, {
+      fetch(\`/api/resources/\${table}/\${id}\`, {
         method: 'DELETE',
       })
         .then(res => {
           if (res.ok) {
-            // Successfully deleted, update the list
             setRecords(records.filter(record => record.id !== id));
           }
         })
@@ -646,74 +657,305 @@ export default function RecordsPage() {
     }
   };
 
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <div className="admin-container py-6">
-      <div className="mb-6 flex items-center">
-        <button 
-          className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
-          onClick={handleBack}
-        >
-          ← Back
-        </button>
-        <h1 className="easy-adminpanel-title">
-          {table} Records
-        </h1>
-        <div className="flex-grow"></div>
-        <button 
-          className="easy-adminpanel-button easy-adminpanel-button-primary"
-          onClick={() => window.location.href = \`/easy-adminpanel/add-record?table=\${table}\`}
-        >
-          + Add New
-        </button>
+    <div
+      className={\`easy-adminpanel w-full min-h-screen flex \${
+        !cssLoaded ? "loading" : ""
+      }\`}
+    >
+      {/* Enhanced Sidebar with better organization */}
+      <div
+        className={\`easy-adminpanel-sidebar transition-all duration-300 ease-in-out \${
+          !sidebarOpen ? "w-0 opacity-0" : "w-64 opacity-100"
+        }\`}
+        style={{
+          overflow: sidebarOpen ? "visible" : "hidden",
+          visibility: sidebarOpen ? "visible" : "hidden",
+          boxShadow: sidebarOpen ? "2px 0 8px rgba(0, 0, 0, 0.15)" : "none",
+          paddingTop: "4.5rem" /* Add padding to account for fixed header */,
+        }}
+      >
+        <div className="easy-adminpanel-sidebar-header">
+          <div className="easy-adminpanel-sidebar-logo">
+            <DatabaseIcon />
+            <span>Easy Admin Panel</span>
+          </div>
+        </div>
+
+        <div className="easy-adminpanel-sidebar-nav">
+          {/* Main Menu Section */}
+          <div className="easy-adminpanel-sidebar-section">
+            <h3 className="easy-adminpanel-sidebar-section-title">Menu</h3>
+            <div
+              className="easy-adminpanel-sidebar-nav-item"
+              onClick={() => (window.location.href = "/easy-adminpanel")}
+            >
+              <DatabaseIcon />
+              <span>Database Tables</span>
+            </div>
+            <div
+              className="easy-adminpanel-sidebar-nav-item"
+            >
+              <GridIcon />
+              <span>Card View</span>
+            </div>
+          </div>
+
+          {/* Tables Section */}
+          <div className="easy-adminpanel-sidebar-section">
+            <h3 className="easy-adminpanel-sidebar-section-title">Tables</h3>
+            <div
+              className="easy-adminpanel-sidebar-nav-item active"
+              onClick={() => (window.location.href = \`/easy-adminpanel/records?table=\${table}\`)}
+            >
+              <TableIcon />
+              <span>{table}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-admin-dark-blue-700 text-admin-gray-400 text-xs">
+          <p>Easy AdminPanel v3.4.1</p>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="easy-adminpanel-card p-8 flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
-        </div>
-      ) : records.length === 0 ? (
-        <div className="easy-adminpanel-card">
-          <p className="text-admin-gray-400 mb-4">
-            No records found. You can add a new record using the "Add New" button.
-          </p>
-        </div>
-      ) : (
-        <div className="easy-adminpanel-card overflow-x-auto">
-          <table className="admin-table w-full">
-            <thead>
-              <tr>
-                {columns.map(column => (
-                  <th key={column}>{column}</th>
-                ))}
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map(record => (
-                <tr key={record.id}>
-                  {columns.map(column => (
-                    <td key={column+record.id}>{String(record[column])}</td>
+      <div className="easy-adminpanel-main flex-1 transition-all duration-300">
+        {/* Fixed Header */}
+        <header className="easy-adminpanel-header">
+          <div className="admin-container">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <button
+                  onClick={toggleSidebar}
+                  className="mr-4 p-2 rounded hover:bg-admin-dark-blue-700 transition-colors duration-200"
+                  aria-label="Toggle sidebar"
+                  title="Toggle sidebar"
+                >
+                  {sidebarOpen ? (
+                    // Arrow left icon when sidebar is open
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-transform duration-200"
+                    >
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  ) : (
+                    // Hamburger menu icon when sidebar is closed
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-transform duration-200"
+                    >
+                      <line x1="3" y1="12" x2="21" y2="12"></line>
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                  )}
+                </button>
+                <div className="flex items-center">
+                  <DatabaseIcon />
+                  <h1 className="easy-adminpanel-title mb-0 ml-2">{table} Records</h1>
+                </div>
+              </div>
+
+              {/* Header Icons */}
+              <div className="flex items-center">
+                <div className="easy-adminpanel-header-icons">
+                  <div
+                    className="easy-adminpanel-header-icon"
+                    onClick={() => (window.location.href = "/easy-adminpanel")}
+                    title="Admin Home"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                  <div className="easy-adminpanel-header-icon" title="Settings">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                  </div>
+                  <div
+                    className="easy-adminpanel-header-icon"
+                    title="User Profile"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Enhanced database connection status indicator */}
+                <div className="relative group">
+                  <div
+                    className={\`admin-status-indicator \${
+                      dbInfo.connected
+                        ? "admin-status-online"
+                        : "admin-status-offline"
+                    } cursor-help\`}
+                  >
+                    <span className="admin-status-indicator-dot"></span>
+                    <span>{dbInfo.connected ? "Bağlı" : "Bağlantı Yok"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="admin-container py-6">
+          <div className="mb-6 flex items-center">
+            <button 
+              className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
+              onClick={handleBack}
+            >
+              ← Back
+            </button>
+            <div className="flex-grow"></div>
+            <button 
+              className="easy-adminpanel-button easy-adminpanel-button-primary"
+              onClick={() => window.location.href = \`/easy-adminpanel/add-record?table=\${table}\`}
+            >
+              + Add New
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="easy-adminpanel-card p-8 flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
+            </div>
+          ) : records.length === 0 ? (
+            <div className="easy-adminpanel-card">
+              <p className="text-admin-gray-400 mb-4">
+                No records found. You can add a new record using the "Add New" button.
+              </p>
+            </div>
+          ) : (
+            <div className="easy-adminpanel-card overflow-x-auto">
+              <table className="admin-table w-full">
+                <thead>
+                  <tr>
+                    {columns.map(column => (
+                      <th key={column}>{column.toUpperCase()}</th>
+                    ))}
+                    <th className="text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map(record => (
+                    <tr key={record.id}>
+                      {columns.map(column => (
+                        <td key={\`\${record.id}-\${column}\`}>
+                          {typeof record[column] === 'boolean' 
+                            ? String(record[column]) 
+                            : record[column] === null 
+                              ? 'null' 
+                              : String(record[column])}
+                        </td>
+                      ))}
+                      <td>
+                        <div className="admin-action-buttons">
+                          <button 
+                            onClick={() => handleEdit(record.id)}
+                            className="admin-edit-button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4 mr-2"
+                            >
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(record.id)}
+                            className="admin-delete-button"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-4 h-4 mr-2"
+                            >
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   ))}
-                  <td className="text-right">
-                    <button 
-                      className="easy-adminpanel-button easy-adminpanel-button-secondary mr-2"
-                      onClick={() => handleEdit(record.id)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="easy-adminpanel-button bg-red-600 hover:bg-red-500 text-white"
-                      onClick={() => handleDelete(record.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }`.trim();
@@ -1094,6 +1336,18 @@ const copyFiles = () => {
   const stylesDest = path.join(projectRoot, "src", "styles", "adminpanel.tsx");
   fs.copyFileSync(stylesFile, stylesDest);
   console.log(`${colors.green}✓ ${colors.reset}Copied: ${stylesDest}`);
+
+  // IMPORTANT: Copy the styles.tsx directly as AdminPanel.tsx to ensure full layout is used
+  const adminPanelDest = path.join(
+    projectRoot,
+    "src",
+    "components",
+    "AdminPanel.tsx"
+  );
+  fs.copyFileSync(stylesFile, adminPanelDest);
+  console.log(
+    `${colors.green}✓ ${colors.reset}Copied styles directly as AdminPanel component: ${adminPanelDest}`
+  );
 
   // Copy additional style files if they exist
   const additionalStylesDir = path.join(helperDir, "styles");

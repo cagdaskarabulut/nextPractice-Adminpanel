@@ -372,5 +372,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   );
 };
 
-// Default export
+// Import AdminPanel directly from styles to ensure all CSS is included
+export { AdminPanel } from "./helper_easy-adminpanel/styles/styles";
+
+// Re-export for backward compatibility
 export default AdminPanel;
