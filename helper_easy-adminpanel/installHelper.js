@@ -592,7 +592,59 @@ export default function EasyAdminPage() {
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { DatabaseIcon, GridIcon, TableIcon } from '@/styles/adminpanel';
+// İcon bileşenlerini direkt olarak tanımlayalım
+// import { DatabaseIcon, GridIcon, TableIcon } from '@/styles/adminpanel';
+
+// Icons
+const DatabaseIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="w-5 h-5"
+  >
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </svg>
+);
+
+const TableIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="w-5 h-5"
+  >
+    <path d="M3 3h18v18H3zM3 9h18M9 21V9"></path>
+  </svg>
+);
+
+const GridIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="w-5 h-5"
+  >
+    <rect x="3" y="3" width="7" height="7"></rect>
+    <rect x="14" y="3" width="7" height="7"></rect>
+    <rect x="14" y="14" width="7" height="7"></rect>
+    <rect x="3" y="14" width="7" height="7"></rect>
+  </svg>
+);
 
 export default function RecordsPage() {
   const searchParams = useSearchParams();
@@ -721,7 +773,7 @@ export default function RecordsPage() {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-admin-dark-blue-700 text-admin-gray-400 text-xs">
-          <p>Easy AdminPanel v3.4.1</p>
+          <p>Easy AdminPanel v3.5.0</p>
         </div>
       </div>
 
@@ -1105,9 +1157,437 @@ export default function AddRecordPage() {
   const defaultClientStyleInjectorContent = `"use client";
 
 import { useEffect } from "react";
-import { injectStylesheet } from "../../styles/adminpanel";
+// injectStylesheet fonksiyonunu doğrudan içeri tanımlayalım
+// import { injectStylesheet } from "../../styles/adminpanel";
 
 export default function ClientStyleInjector() {
+  // Stil enjeksiyon fonksiyonunu doğrudan burada tanımlayalım
+  const injectStylesheet = () => {
+    // Return a promise to track when stylesheet is loaded
+    return new Promise((resolve) => {
+      // If style is already loaded, don't load it again
+      if (document.getElementById("easy-adminpanel-styles")) {
+        resolve();
+        return;
+      }
+
+      // Create a style element
+      const style = document.createElement("style");
+      style.id = "easy-adminpanel-styles";
+      
+      // Shortened CSS for brevity - actual CSS will be more extensive
+      style.innerHTML = \`
+        :root {
+          --admin-dark-blue-900: #0D1F36;
+          --admin-dark-blue-800: #12263F;
+          --admin-dark-blue-700: #183054;
+          --admin-dark-blue-600: #1D3A6A;
+          --admin-dark-blue-500: #2E4780;
+          --admin-blue-500: #3378FF;
+          --admin-blue-400: #4A8CFF;
+          --admin-blue-300: #75AAFF;
+          --admin-gray-100: #F7F9FC;
+          --admin-gray-200: #EAF0F7;
+          --admin-gray-300: #D9E2EC;
+          --admin-gray-400: #B3C2D1;
+          --admin-gray-500: #8696A7;
+          --admin-red-500: #FF3358;
+          --admin-red-400: #FF5C7A;
+          --admin-green-500: #10B981;
+          --admin-green-400: #34D399;
+        }
+
+        .easy-adminpanel {
+          min-height: 100vh;
+          background-color: var(--admin-dark-blue-900);
+          color: white;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .easy-adminpanel-header {
+          border-bottom: 1px solid var(--admin-dark-blue-700);
+          background-color: var(--admin-dark-blue-800);
+          padding: 1.25rem 0;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          z-index: 40;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-container {
+          max-width: 95%;
+          margin-left: auto;
+          margin-right: auto;
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+        }
+
+        .easy-adminpanel-sidebar {
+          width: 250px;
+          background-color: var(--admin-dark-blue-800);
+          min-height: 100vh;
+          border-right: 1px solid var(--admin-dark-blue-700);
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .easy-adminpanel-main {
+          flex: 1;
+          min-width: 0;
+          padding-top: 4.5rem;
+        }
+
+        .easy-adminpanel-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 1rem;
+        }
+
+        .easy-adminpanel-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          margin-right: 0.5rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .easy-adminpanel-button-primary {
+          background-color: var(--admin-blue-500);
+          color: white;
+        }
+
+        .easy-adminpanel-button-primary:hover {
+          background-color: var(--admin-blue-400);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .easy-adminpanel-button-secondary {
+          background-color: var(--admin-dark-blue-700);
+          color: white;
+        }
+
+        .easy-adminpanel-button-secondary:hover {
+          background-color: var(--admin-dark-blue-600);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .easy-adminpanel-card {
+          background-color: var(--admin-dark-blue-800);
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          border: 1px solid var(--admin-dark-blue-700);
+          overflow: hidden;
+        }
+
+        .admin-table {
+          width: 100%;
+          text-align: left;
+        }
+        
+        .admin-table th {
+          padding: 0.75rem 1rem;
+          color: var(--admin-gray-400);
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+          border-bottom: 1px solid var(--admin-dark-blue-700);
+        }
+        
+        .admin-table td {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid var(--admin-dark-blue-700);
+        }
+        
+        .admin-table tr:hover {
+          background-color: var(--admin-dark-blue-700);
+        }
+
+        .admin-input {
+          background-color: var(--admin-dark-blue-700);
+          border: 1px solid var(--admin-dark-blue-600);
+          color: white;
+          border-radius: 0.375rem;
+          padding: 0.5rem 1rem;
+        }
+        
+        .admin-input:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px var(--admin-blue-500);
+        }
+
+        /* Header Icons Styles */
+        .easy-adminpanel-header-icons {
+          display: flex;
+          gap: 1rem;
+          margin-right: 1rem;
+        }
+        
+        .easy-adminpanel-header-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 0.5rem;
+          color: var(--admin-gray-300);
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        
+        .easy-adminpanel-header-icon:hover {
+          background-color: var(--admin-dark-blue-700);
+          color: white;
+          transform: translateY(-1px);
+        }
+        
+        .easy-adminpanel-header-icon.active {
+          background-color: var(--admin-blue-500);
+          color: white;
+        }
+
+        /* Status Indicator Styles */
+        .admin-status-indicator {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          font-size: 0.875rem;
+        }
+        
+        .admin-status-online {
+          background-color: rgba(34, 197, 94, 0.2);
+          color: rgb(74, 222, 128);
+        }
+        
+        .admin-status-offline {
+          background-color: rgba(239, 68, 68, 0.2);
+          color: rgb(248, 113, 113);
+        }
+        
+        .admin-status-indicator-dot {
+          width: 0.5rem;
+          height: 0.5rem;
+          border-radius: 9999px;
+          margin-right: 0.5rem;
+        }
+        
+        .admin-status-online .admin-status-indicator-dot {
+          background-color: rgb(34, 197, 94);
+        }
+        
+        .admin-status-offline .admin-status-indicator-dot {
+          background-color: rgb(239, 68, 68);
+        }
+
+        /* Action Button Styles for Tables */
+        .admin-action-buttons {
+          display: flex;
+          gap: 0.5rem;
+          justify-content: flex-end;
+        }
+        
+        .admin-edit-button {
+          background-color: var(--admin-blue-500);
+          color: white;
+          font-weight: 500;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          border: none;
+          cursor: pointer;
+        }
+        
+        .admin-edit-button:hover {
+          background-color: var(--admin-blue-400);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        
+        .admin-delete-button {
+          background-color: var(--admin-red-500);
+          color: white;
+          font-weight: 500;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          border: none;
+          cursor: pointer;
+        }
+        
+        .admin-delete-button:hover {
+          background-color: var(--admin-red-400);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Sidebar Styles */
+        .easy-adminpanel-sidebar-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--admin-dark-blue-700);
+          margin-bottom: 0;
+          background-color: var(--admin-dark-blue-800);
+        }
+        
+        .easy-adminpanel-sidebar-logo {
+          display: flex;
+          align-items: center;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: white;
+        }
+        
+        .easy-adminpanel-sidebar-logo svg {
+          margin-right: 0.75rem;
+          color: var(--admin-blue-400);
+          width: 1.5rem;
+          height: 1.5rem;
+        }
+        
+        .easy-adminpanel-sidebar-nav {
+          padding: 1rem 0;
+          overflow-y: auto;
+          flex-grow: 1;
+        }
+        
+        .easy-adminpanel-sidebar-section {
+          margin-bottom: 1.5rem;
+        }
+        
+        .easy-adminpanel-sidebar-section-title {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          color: var(--admin-gray-500);
+          padding: 0 1.5rem;
+          margin-bottom: 0.5rem;
+          letter-spacing: 0.05em;
+        }
+        
+        .easy-adminpanel-sidebar-nav-item {
+          display: flex;
+          align-items: center;
+          padding: 0.75rem 1.5rem;
+          color: var(--admin-gray-300);
+          transition: all 0.2s;
+          cursor: pointer;
+          margin: 0;
+          border-left: 3px solid transparent;
+        }
+        
+        .easy-adminpanel-sidebar-nav-item:hover {
+          color: white;
+          background-color: var(--admin-dark-blue-700);
+          border-left-color: var(--admin-blue-400);
+        }
+        
+        .easy-adminpanel-sidebar-nav-item.active {
+          color: white;
+          background-color: var(--admin-dark-blue-700);
+          border-left-color: var(--admin-blue-500);
+        }
+        
+        .easy-adminpanel-sidebar-nav-item svg {
+          margin-right: 0.75rem;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+
+        /* Specific styles for Turkish titles */
+        .admin-table th.İŞLEMLER, 
+        .admin-table th.ISLEMLER, 
+        .admin-table th.ACTIONS {
+          text-align: right;
+        }
+
+        /* Loading Screen Styles */
+        .easy-adminpanel-loading {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #0D1F36;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          transition: opacity 0.5s ease-out;
+        }
+        
+        .easy-adminpanel-loading.loaded {
+          opacity: 0;
+          pointer-events: none;
+        }
+        
+        .easy-adminpanel-loading-spinner {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          border: 3px solid rgba(255, 255, 255, 0.1);
+          border-top-color: #3378FF;
+          animation: spin 1s linear infinite;
+          margin-bottom: 1rem;
+        }
+        
+        .easy-adminpanel-loading-text {
+          color: white;
+          font-size: 1rem;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          margin-top: 1rem;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        /* Hide content until fully loaded */
+        .easy-adminpanel.loading {
+          visibility: hidden;
+        }
+      \`;
+      
+      document.head.appendChild(style);
+
+      // Font eklemek için link elementi
+      const fontLink = document.createElement("link");
+      fontLink.rel = "stylesheet";
+      fontLink.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+      document.head.appendChild(fontLink);
+
+      // Add a small delay to ensure styles are applied
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    });
+  };
+
   useEffect(() => {
     // Inject styles
     injectStylesheet();
