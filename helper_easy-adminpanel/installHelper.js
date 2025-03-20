@@ -588,7 +588,7 @@ export default function EasyAdminPage() {
   return <AdminPanel title={title} />;
 }`.trim();
 
-  const recordsPageContent = `"use client";
+const recordsPageContent = `"use client";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -1012,7 +1012,7 @@ export default function RecordsPage() {
   );
 }`.trim();
 
-  const addRecordPageContent = `"use client";
+const addRecordPageContent = `"use client";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -1024,13 +1024,19 @@ export default function AddRecordPage() {
   const [record, setRecord] = useState({});
   const [tableSample, setTableSample] = useState(null);
   const [columns, setColumns] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!table) return;
     
     // Get a sample record to understand table structure
     fetch(\`/api/resources/\${table}\`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(\`API returned status \${res.status}\`);
+        }
+        return res.json();
+      })
       .then(data => {
         if (data.length > 0) {
           setTableSample(data[0]);
@@ -1045,9 +1051,11 @@ export default function AddRecordPage() {
           });
           setRecord(emptyRecord);
         }
+        setError(null);
       })
       .catch(error => {
         console.error("Error determining table structure:", error);
+        setError("Tablo yapısı belirlenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
       });
   }, [table]);
 
@@ -1062,6 +1070,7 @@ export default function AddRecordPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     fetch(\`/api/resources/\${table}\`, {
       method: 'POST',
@@ -1071,24 +1080,37 @@ export default function AddRecordPage() {
       body: JSON.stringify(record)
     })
       .then(res => {
-        if (res.ok) {
-          // Success
-          window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
-        } else {
-          setLoading(false);
-          alert('An error occurred while adding the record!');
+        if (!res.ok) {
+          throw new Error(\`API returned status \${res.status}\`);
         }
+        return res.json();
+      })
+      .then(() => {
+        // Success - redirect back to records page
+        window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
       })
       .catch(error => {
         console.error("Error adding record:", error);
         setLoading(false);
-        alert('An error occurred while adding the record!');
+        setError("Kayıt eklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
       });
   };
 
   const handleBack = () => {
     window.location.href = \`/easy-adminpanel/records?table=\${table}\`;
   };
+
+  if (!table) {
+    return (
+      <div className="admin-container py-6">
+        <div className="easy-adminpanel-card">
+          <p className="text-admin-gray-400">
+            Tablo belirtilmedi. Lütfen geçerli bir tablo seçin.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-container py-6">
@@ -1097,10 +1119,10 @@ export default function AddRecordPage() {
           className="easy-adminpanel-button easy-adminpanel-button-secondary mr-4"
           onClick={handleBack}
         >
-          ← Back
+          ← Geri
         </button>
         <h1 className="easy-adminpanel-title">
-          {table} - Add New Record
+          {table} - Yeni Kayıt Ekle
         </h1>
       </div>
 
@@ -1109,18 +1131,23 @@ export default function AddRecordPage() {
           <div className="p-8 flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-blue-500"></div>
           </div>
+        ) : error ? (
+          <div className="p-4 mb-4 bg-admin-red-500 bg-opacity-20 text-white rounded-md">
+            <p>{error}</p>
+          </div>
         ) : columns.length === 0 ? (
           <p className="text-admin-gray-400">
-            Could not determine table structure. Please ensure there is at least one record in the table.
+            Tablo yapısı belirlenemedi. Lütfen tabloda en az bir kayıt olduğundan emin olun.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {columns.map(column => (
               <div key={column} className="space-y-1">
-                <label className="block text-sm">
+                <label htmlFor={column} className="block text-sm">
                   {column}
                 </label>
                 <input
+                  id={column}
                   type="text"
                   name={column}
                   value={record[column] || ''}
@@ -1137,14 +1164,14 @@ export default function AddRecordPage() {
                 className="easy-adminpanel-button easy-adminpanel-button-secondary"
                 onClick={handleBack}
               >
-                Cancel
+                İptal
               </button>
               <button 
                 type="submit"
                 className="easy-adminpanel-button easy-adminpanel-button-primary"
                 disabled={loading}
               >
-                Save
+                Kaydet
               </button>
             </div>
           </form>
@@ -1154,7 +1181,7 @@ export default function AddRecordPage() {
   );
 }`.trim();
 
-  const defaultClientStyleInjectorContent = `"use client";
+const defaultClientStyleInjectorContent = `"use client";
 
 import { useEffect } from "react";
 // injectStylesheet fonksiyonunu doğrudan içeri tanımlayalım
@@ -1597,125 +1624,124 @@ export default function ClientStyleInjector() {
   return null;
 }`.trim();
 
-  // Create admin pages - easy-adminpanel folder
-  const layoutPath = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel",
-    "layout.tsx"
-  );
-  const pagePath = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel",
-    "page.tsx"
-  );
-  const clientStyleInjectorPath = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel",
-    "ClientStyleInjector.tsx"
-  );
+// Create admin pages - easy-adminpanel folder
+const layoutPath = path.join(
+  projectRoot,
+  "src",
+  "app",
+  "easy-adminpanel",
+  "layout.tsx"
+);
+const pagePath = path.join(
+  projectRoot,
+  "src",
+  "app",
+  "easy-adminpanel",
+  "page.tsx"
+);
+const clientStyleInjectorPath = path.join(
+  projectRoot,
+  "src",
+  "app",
+  "easy-adminpanel",
+  "ClientStyleInjector.tsx"
+);
 
-  // Directories for records and add-record pages
-  const recordsDirPath = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel",
-    "records"
-  );
-  const addRecordDirPath = path.join(
-    projectRoot,
-    "src",
-    "app",
-    "easy-adminpanel",
-    "add-record"
-  );
+// Directories for records and add-record pages
+const recordsDirPath = path.join(
+  projectRoot,
+  "src",
+  "app",
+  "easy-adminpanel",
+  "records"
+);
+const addRecordDirPath = path.join(
+  projectRoot,
+  "src",
+  "app",
+  "easy-adminpanel",
+  "add-record"
+);
 
-  // Create directories
-  if (!fs.existsSync(recordsDirPath)) {
-    fs.mkdirSync(recordsDirPath, { recursive: true });
-  }
-  if (!fs.existsSync(addRecordDirPath)) {
-    fs.mkdirSync(addRecordDirPath, { recursive: true });
-  }
+// Create directories
+if (!fs.existsSync(recordsDirPath)) {
+  fs.mkdirSync(recordsDirPath, { recursive: true });
+}
+if (!fs.existsSync(addRecordDirPath)) {
+  fs.mkdirSync(addRecordDirPath, { recursive: true });
+}
 
-  // Records and add-record page files
-  const recordsPagePath = path.join(recordsDirPath, "page.tsx");
-  const addRecordPagePath = path.join(addRecordDirPath, "page.tsx");
+// Records and add-record page files
+const recordsPagePath = path.join(recordsDirPath, "page.tsx");
+const addRecordPagePath = path.join(addRecordDirPath, "page.tsx");
 
-  // Try to copy from templates directory first
-  let templatesFound = false;
-  try {
-    // Try different potential template directories
-    const possibleTemplateDirs = [
-      path.join(path.dirname(path.dirname(helperDir)), "templates"),
-      path.join(path.dirname(helperDir), "templates"),
-      path.join(helperDir, "templates"),
-      path.join(projectRoot, "node_modules", "easy-adminpanel", "templates"),
-      path.join(
-        projectRoot,
-        "node_modules",
-        "easy-adminpanel",
-        "dist",
-        "templates"
-      ),
-    ];
+// Try to copy from templates directory first
+let templatesFound = false;
+try {
+  // Try different potential template directories
+  const possibleTemplateDirs = [
+    path.join(path.dirname(path.dirname(helperDir)), "templates"),
+    path.join(path.dirname(helperDir), "templates"),
+    path.join(helperDir, "templates"),
+    path.join(projectRoot, "node_modules", "easy-adminpanel", "templates"),
+    path.join(
+      projectRoot,
+      "node_modules",
+      "easy-adminpanel",
+      "dist",
+      "templates"
+    ),
+  ];
 
-    for (const templateDir of possibleTemplateDirs) {
-      if (fs.existsSync(templateDir)) {
-        console.log(
-          `${colors.blue}ℹ ${colors.reset}Templates directory found: ${templateDir}`
-        );
+  for (const templateDir of possibleTemplateDirs) {
+    if (fs.existsSync(templateDir)) {
+      console.log(
+        `${colors.blue}ℹ ${colors.reset}Templates directory found: ${templateDir}`
+      );
 
-        // We have template files but we'll still use our custom files
-        templatesFound = true;
-        break;
-      }
+      // We have template files but we'll still use our custom files
+      templatesFound = true;
+      break;
     }
-  } catch (error) {
-    console.log(
-      `${colors.yellow}⚠️ ${colors.reset}Template search error: ${error.message}`
-    );
   }
-
-  // Create files with custom content regardless of template status
+} catch (error) {
   console.log(
-    `${colors.green}✓ ${colors.reset}Creating custom admin pages with enhanced UI...`
+    `${colors.yellow}⚠️ ${colors.reset}Template search error: ${error.message}`
   );
+}
 
-  // Create layout file
-  fs.writeFileSync(layoutPath, defaultLayoutContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Layout.tsx created: ${layoutPath}`
-  );
+// Create files with custom content regardless of template status
+console.log(
+  `${colors.green}✓ ${colors.reset}Creating custom admin pages with enhanced UI...`
+);
 
-  // Create page file
-  fs.writeFileSync(pagePath, defaultPageContent);
-  console.log(`${colors.green}✓ ${colors.reset}Page.tsx created: ${pagePath}`);
+// Create layout file
+fs.writeFileSync(layoutPath, defaultLayoutContent);
+console.log(
+  `${colors.green}✓ ${colors.reset}Layout.tsx created: ${layoutPath}`
+);
 
-  // Create ClientStyleInjector file
-  fs.writeFileSync(clientStyleInjectorPath, defaultClientStyleInjectorContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx created: ${clientStyleInjectorPath}`
-  );
+// Create page file
+fs.writeFileSync(pagePath, defaultPageContent);
+console.log(`${colors.green}✓ ${colors.reset}Page.tsx created: ${pagePath}`);
 
-  // Create Records page
-  fs.writeFileSync(recordsPagePath, recordsPageContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Records/page.tsx created: ${recordsPagePath}`
-  );
+// Create ClientStyleInjector file
+fs.writeFileSync(clientStyleInjectorPath, defaultClientStyleInjectorContent);
+console.log(
+  `${colors.green}✓ ${colors.reset}ClientStyleInjector.tsx created: ${clientStyleInjectorPath}`
+);
 
-  // Create Add-record page
-  fs.writeFileSync(addRecordPagePath, addRecordPageContent);
-  console.log(
-    `${colors.green}✓ ${colors.reset}Add-record/page.tsx created: ${addRecordPagePath}`
-  );
-};
+// Create Records page
+fs.writeFileSync(recordsPagePath, recordsPageContent);
+console.log(
+  `${colors.green}✓ ${colors.reset}Records/page.tsx created: ${recordsPagePath}`
+);
+
+// Create Add-record page
+fs.writeFileSync(addRecordPagePath, addRecordPageContent);
+console.log(
+  `${colors.green}✓ ${colors.reset}Add-record/page.tsx created: ${addRecordPagePath}`
+);
 
 // Copy files
 const copyFiles = () => {
